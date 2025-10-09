@@ -10,28 +10,23 @@ const sessionRoutes = require("./routes/SessionRoutes.js");
 const courseRoutes = require("./routes/CourseRoutes.js");
 const Course = require("./models/Courses.js");
 const Student = require("./models/students.js");
-const Session = require("./models/Session.js"); // ✅ Import session model
+const Session = require("./models/Session.js");
 
-// Load environment variables
 dotenv.config();
-
-// Connect to the database
 connectDB();
 
 const app = express();
-
-// Enable CORS for frontend communication
 const corsOptions = {
-  origin: "http://localhost:5173", // ✅ Ensure this matches your frontend URL
+  origin: "http://localhost:5173",
   methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization", "x-requested-with"], // Added 'x-requested-with'
-  credentials: true, // ✅ Required for cookies/sessions/authentication
+  allowedHeaders: ["Content-Type", "Authorization", "x-requested-with"],
+  credentials: true,
 };
 
-// Enable CORS middleware
+
 app.use(cors(corsOptions));
 
-// ✅ Explicitly allow credentials in responses
+
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Credentials", "true");
   next();
@@ -40,17 +35,15 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Helper function to ensure directories exist
 const ensureDirectoryExistence = (dir) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
 };
 
-// Ensure upload directories exist
+
 ["./uploads/students/images", "./uploads/sessions/images", "./uploads/courses/images"].forEach(ensureDirectoryExistence);
 
-// Multer Configuration for Image Uploads
 const configureMulter = (uploadPath) => multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadPath),
@@ -61,17 +54,17 @@ const configureMulter = (uploadPath) => multer({
   }),
 });
 
-// Set up multer for students, sessions, and courses
+
 const studentImageUpload = configureMulter("./uploads/students/images");
 const sessionImageUpload = configureMulter("./uploads/sessions/images");
 const courseImageUpload = configureMulter("./uploads/courses/images");
 
-// Serve static files (images)
+
 app.use("/uploads/students", express.static(path.join(__dirname, "uploads/students")));
 app.use("/uploads/sessions", express.static(path.join(__dirname, "uploads/sessions")));
 app.use("/uploads/courses", express.static(path.join(__dirname, "uploads/courses")));
 
-// Image Upload APIs
+
 app.post("/api/upload/student", studentImageUpload.single("image"), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded" });
   res.status(200).json({ filePath: `/uploads/students/images/${req.file.filename}` });
@@ -87,12 +80,12 @@ app.post("/api/upload/course", courseImageUpload.single("image"), (req, res) => 
   res.status(200).json({ filePath: `/uploads/courses/images/${req.file.filename}` });
 });
 
-// API Routes
+
 app.use("/api/students", studentRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/courses", courseRoutes);
 
-// ✅ GET Sessions Course-wise
+
 app.get("/api/sessions", async (req, res) => {
   try {
     const sessions = await Session.find().populate("courseId", "title description");
@@ -114,7 +107,7 @@ app.get("/api/sessions", async (req, res) => {
   }
 });
 
-// DELETE Student Route
+
 app.delete("/api/students/:id", async (req, res) => {
   try {
     const student = await Student.findByIdAndDelete(req.params.id);
@@ -177,5 +170,5 @@ app.delete("/api/sessions/:id", async (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
