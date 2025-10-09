@@ -1,8 +1,8 @@
-const express = require("express");
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
-const Student = require("../models/students"); // Assuming your model is named 'students'
+import express from "express";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import Student from "../models/Students.js";
 
 const router = express.Router();
 

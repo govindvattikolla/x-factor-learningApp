@@ -1,5 +1,5 @@
-const express = require("express");
-const Course = require("../models/Courses");
+import express from "express";
+import Course from "../models/Courses";
 
 const router = express.Router();
 

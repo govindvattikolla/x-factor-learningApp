@@ -1,7 +1,6 @@
-const express = require("express");
+import Session from "../models/Session";
+import express from "express";
 const router = express.Router();
-const Session = require("../models/Session");
-
 
 // Add new session
 router.post("/add", async (req, res) => {
