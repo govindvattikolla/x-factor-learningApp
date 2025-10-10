@@ -16,7 +16,7 @@ authRouter.post('/login', async (req, res) => {
                 const token = jwt.sign({
                     role: 'admin',
                     id: admin._id,
-                },process.env.JWT_SECRET);
+                }, process.env.JWT_SECRET);
                 res.json({token: token, role: role});
             } else {
                 res.status(401).json({message: 'Invalid login or password'});
@@ -25,7 +25,7 @@ authRouter.post('/login', async (req, res) => {
             const student = await Student.findOne({
                 $or: [{phone: login}, {email: login}],
             });
-            if (student && student.password === password) {
+            if (student && student.comparePassword(password)) {
                 const token = jwt.sign({
                     role: 'admin',
                     id: student._id,
