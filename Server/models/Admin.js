@@ -12,4 +12,4 @@ const AdminSchema = new mongoose.Schema({
 
 const Student = mongoose.model("Admin", AdminSchema);
 
-module.exports = Student;
+export default Student;

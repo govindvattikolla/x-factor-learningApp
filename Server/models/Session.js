@@ -9,4 +9,4 @@ const sessionSchema = new mongoose.Schema({
     status: {type: String, enum: ["Scheduled", "Ongoing", "Completed"], required: true},
 }, {timestamps: true});
 
-module.exports = mongoose.model("Session", sessionSchema);
+export default mongoose.model("Session", sessionSchema);
