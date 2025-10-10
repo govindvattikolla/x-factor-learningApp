@@ -16,7 +16,7 @@ authRouter.post('/login', async (req, res) => {
                 const token = jwt.sign({
                     role: 'admin',
                     id: admin._id,
-                }, process.env.JWT_SECRET);
+                }, process.env.JWT_SECRET,{ expiresIn: '1000m' });
                 res.json({token: token, role: role});
             } else {
                 res.status(401).json({message: 'Invalid login or password'});
@@ -29,7 +29,7 @@ authRouter.post('/login', async (req, res) => {
                 const token = jwt.sign({
                     role: 'admin',
                     id: student._id,
-                })
+                },process.env.JWT_SECRET,{ expiresIn: '1000m' })
                 res.json({token: token, role: role});
             } else {
                 res.status(401).json({message: 'Invalid login or password'});

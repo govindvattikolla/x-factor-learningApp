@@ -9,6 +9,7 @@ import AdminRoute from "./routes/AdminRoute.js";
 import UploadRoute from "./routes/UploadRoute.js";
 import AuthRoute from "./routes/AuthRoute.js";
 import ensureDirectoryExistence from "./service/folderMaintaince.js";
+import AdminAuth from "./middleware/AdminAuth.js";
 
 dotenv.config();
 connectDB().then(() => {
@@ -35,7 +36,7 @@ app.use(express.urlencoded({extended: true}));
 app.use("/api",AuthRoute);
 app.use("/api/students", studentRoutes);
 app.use("/api/sessions", sessionRoutes);
-app.use("/api/courses", courseRoutes);
+app.use("/api/admin/course",AdminAuth,courseRoutes);
 app.use("/api/upload", UploadRoute);
 app.use("/api/admin", AdminRoute);
 
