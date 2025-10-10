@@ -1,14 +1,14 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import path from "path";
 import connectDB from "./config/dbconfig.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import sessionRoutes from "./routes/SessionRoutes.js";
 import courseRoutes from "./routes/CourseRoutes.js";
-import ensureDirectoryExistence from "./service/folderMaintaince.js";
-import {fileURLToPath} from "url";
+import AdminRoute from "./routes/AdminRoute.js";
 import UploadRoute from "./routes/UploadRoute.js";
+import AuthRoute from "./routes/AuthRoute.js";
+import ensureDirectoryExistence from "./service/folderMaintaince.js";
 
 dotenv.config();
 connectDB().then(() => {
@@ -32,10 +32,12 @@ app.use(express.urlencoded({extended: true}));
 
 ["./uploads/students/images", "./uploads/sessions/images", "./uploads/courses/images"].forEach(ensureDirectoryExistence);
 
+app.use("/api",AuthRoute);
 app.use("/api/students", studentRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/upload", UploadRoute);
+app.use("/api/admin", AdminRoute);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

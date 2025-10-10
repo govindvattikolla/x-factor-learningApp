@@ -1,5 +1,6 @@
 import express from 'express';
-import Admin from '../models/Admin';
+import Admin from '../models/Admin.js';
+import Student from '../models/Students.js';
 import jwt from 'jsonwebtoken';
 
 const authRouter = express.Router();
@@ -11,11 +12,11 @@ authRouter.post('/login', async (req, res) => {
             const admin = await Admin.findOne({
                 $or: [{phone: login}, {email: login}],
             });
-            if (admin && admin.password === password) {
+            if (admin && admin.comparePassword(password)) {
                 const token = jwt.sign({
                     role: 'admin',
                     id: admin._id,
-                })
+                },process.env.JWT_SECRET);
                 res.json({token: token, role: role});
             } else {
                 res.status(401).json({message: 'Invalid login or password'});
