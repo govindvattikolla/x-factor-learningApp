@@ -8,14 +8,14 @@ const CourseSchema = new mongoose.Schema({
     },
     description: String,
     thumbnail: String,
-    key: {
+    videoSource: {
         type: String,
         required: true,
+        enum: ['s3', 'youtube']
     },
-    location: {
-        type: String,
-        required: true,
-    }, price: {
+    key: String,
+    videoPublicId: String,
+    price: {
         type: Number,
         required: true,
     },

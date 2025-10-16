@@ -27,7 +27,7 @@ authRouter.post('/login', async (req, res) => {
             });
             if (student && student.comparePassword(password)) {
                 const token = jwt.sign({
-                    role: 'admin',
+                    role: 'user',
                     id: student._id,
                 },process.env.JWT_SECRET,{ expiresIn: '1000m' })
                 res.json({token: token, role: role});

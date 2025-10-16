@@ -13,7 +13,6 @@ const AdminAuth = async (req, res, next) => {
             return res.status(403).json({ message: "you are not authorized" });
         }
         req['sessionData'] = tokenDetails;
-        console.log(tokenDetails);
         next();
     } catch (e) {
         console.error("Error at the admin middleware " + e);
