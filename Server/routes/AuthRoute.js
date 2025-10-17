@@ -1,7 +1,7 @@
 import express from 'express';
 import Admin from '../models/Admin.js';
-import Student from '../models/Students.js';
 import jwt from 'jsonwebtoken';
+import User from "../models/User.js";
 
 const authRouter = express.Router();
 
@@ -22,13 +22,13 @@ authRouter.post('/api/login', async (req, res) => {
                 res.status(401).json({message: 'Invalid login or password'});
             }
         } else if (role === 'user') {
-            const student = await Student.findOne({
+            const user = await User.findOne({
                 $or: [{phone: login}, {email: login}],
             });
-            if (student && student.comparePassword(password)) {
+            if (user && user.comparePassword(password)) {
                 const token = jwt.sign({
                     role: 'user',
-                    id: student._id,
+                    id: user._id,
                 },process.env.JWT_SECRET,{ expiresIn: '1000m' })
                 res.json({token: token, role: role});
             } else {
@@ -46,17 +46,39 @@ authRouter.post('/api/login', async (req, res) => {
     }
 });
 
-// authRouter.post('/api/register', async (req, res) => {
-//    try {
-//
-//    } catch (e) {
-//        console.error("Error occurred while login " + e);
-//        res.status(500).send({
-//            error: e.message,
-//            message: 'Internal Server Error',
-//        })
-//    }
-// });
+authRouter.post('/api/signup', async (req, res) => {
+   try {
+       const {email, password,name,phone} = req.body;
+       const check = await User.findOne({
+           $or: [
+               { email: email },
+               { phone: phone }
+           ]
+       });
+
+       if (check) {
+           return res.status(400).json({message: 'email or password already exists'});
+       }
+
+       const user = await User.insertOne({
+           email,
+           password,
+           name,
+           phone
+       });
+
+       return res.json({
+           message: 'User successfully created!',
+           id: user.id,
+       });
+   } catch (e) {
+       console.error("Error occurred while login " + e);
+       res.status(500).send({
+           error: e.message,
+           message: 'Internal Server Error',
+       })
+   }
+});
 
 export default authRouter;
 

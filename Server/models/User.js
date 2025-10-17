@@ -1,18 +1,17 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
-const studentSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
     name: {type: String, required: true},
     email: {type: String,required: true,unique:true},
     phone: {type: String, required: true,unique:true},
     password : {type: String,required: true},
-    address: {type: String},
-    description: {type: String},
     image: {type: String},
-    createdAt: {type: Date, default: Date.now},
+},{
+    timestamps: true
 });
 
-studentSchema.pre("save", async function (next) {
+UserSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next();
 
     try {
@@ -24,10 +23,9 @@ studentSchema.pre("save", async function (next) {
     }
 });
 
-studentSchema.methods.comparePassword = async function (candidatePassword) {
+UserSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
-const Student = mongoose.model("Student", studentSchema);
 
-export default Student;
+export default mongoose.model("User", UserSchema);
