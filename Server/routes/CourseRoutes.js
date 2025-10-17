@@ -69,7 +69,17 @@ router.post("/api/admin/course/add", upload.fields([
 
 router.get("/api/admin/course", async (req, res) => {
     try {
-        const courses = await Course.find().populate("videos");
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const [courses, total] = await Promise.all([
+            Course.find()
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit),
+            Course.countDocuments(),
+        ]);
 
         const result = await Promise.all(
             courses.map(async (course) => {
@@ -94,13 +104,16 @@ router.get("/api/admin/course", async (req, res) => {
             })
         );
 
-        res.json(result);
+        res.json({
+            total,
+            page,
+            totalPages: Math.ceil(total / limit),
+            data: result,
+        });
     } catch (error) {
         console.error("Error getting course:", error);
         res.status(500).json({ error: "Internal server error" });
     }
 });
-
-
 
 export default router;

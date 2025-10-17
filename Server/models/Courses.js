@@ -22,18 +22,7 @@ const CourseSchema = new mongoose.Schema({
 });
 
 CourseSchema.set("toObject", { virtuals: true });
-CourseSchema.set("toJSON", {virtuals: true ,});
-
-CourseSchema.virtual("videos", {
-    ref: "Video",
-    localField: "_id",
-    foreignField: "courseId",
-});
-
-CourseSchema.pre(/^find/, function (next) {
-    this.populate({ path: "videos", strictPopulate: false });
-    next();
-});
+CourseSchema.set("toJSON", {virtuals: true });
 
 
 
