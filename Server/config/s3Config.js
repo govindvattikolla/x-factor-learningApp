@@ -1,6 +1,7 @@
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import multer from 'multer';
 import multerS3 from 'multer-s3';
+import path from "path";
 
 const s3Client = new S3Client({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -18,14 +19,15 @@ const upload = multer({
         },
         key: (req, file, cb) => {
             const fileName = `${Date.now()}`;
+            const extension = path.extname(file.originalname);
             if (file.fieldname === 'video') {
-                cb(null, `course-videos/${fileName}`);
+                cb(null, `course-videos/${fileName}${extension}`);
             } else if (file.fieldname === 'thumbnail') {
-                cb(null, `course-thumbnails/${fileName}`);
+                cb(null, `course-thumbnails/${fileName}${extension}`);
             } else if (file.fieldname === 'profile') {
-                cb(null, `profile/${fileName}`);
+                cb(null, `profile/${fileName}${extension}`);
             } else {
-                cb(null, `uploads/${fileName}`);
+                cb(null, `uploads/${fileName}${extension}`);
             }
         }
     }),
