@@ -4,15 +4,19 @@ import {deleteFromS3, upload} from "../config/s3Config.js";
 import Video from "../models/Video.js";
 import mongoose from "mongoose";
 import s3Service from "../service/S3Service.js";
+import courses from "../models/Courses.js";
 
 const router = express.Router();
 
 router.post("/api/admin/course/add", upload.fields([
     {name: 'video', maxCount: 1},
-    {name: 'thumbnail', maxCount: 1}
+    {name: 'thumbnail', maxCount: 1},
+    {name : 'video_thumbnail', maxCount: 1},
 ]), async (req, res) => {
     const videoFile = req.files?.video?.[0];
     const thumbnailFile = req.files?.thumbnail?.[0];
+    const thumbnailFiles = req.files?.video_thumbnail;
+    const videoThumbnail = (Array.isArray(thumbnailFiles) && thumbnailFiles.length > 0) ? thumbnailFiles[0] : undefined;
     const session = await mongoose.startSession();
 
     const cleanupFiles = async () => {
@@ -25,7 +29,7 @@ router.post("/api/admin/course/add", upload.fields([
         const {title, description, price} = req.body;
         const userID = req.sessionData._id;
 
-        if (!title || !description || !price || !videoFile || !thumbnailFile) {
+        if (!title || !description || !price || !videoFile || !thumbnailFile || !videoThumbnail ) {
             await cleanupFiles();
             return res.status(400).json({error: "All fields, including video and thumbnail, are required"});
         }
@@ -49,6 +53,7 @@ router.post("/api/admin/course/add", upload.fields([
         const newVideo = new Video({
             title: `${title} - Introduction`,
             courseId: savedCourse._id,
+            thumbnail:videoThumbnail.key,
             videoSource: 's3',
             key: videoFile.key,
             addedBy: userID
@@ -57,8 +62,7 @@ router.post("/api/admin/course/add", upload.fields([
 
         console.log("Course and initial video added successfully:", savedCourse);
         await session.commitTransaction();
-        res.status(201).json({message: "Course added","id":savedCourse.id});
-
+        res.status(201).json({message: "Course added", "id": savedCourse.id});
     } catch (error) {
         console.error("Error adding course:", error);
         await cleanupFiles();
@@ -75,7 +79,7 @@ router.get("/api/admin/course", async (req, res) => {
 
         const [courses, total] = await Promise.all([
             Course.find()
-                .sort({ createdAt: -1 })
+                .sort({createdAt: -1})
                 .skip(skip)
                 .limit(limit),
             Course.countDocuments(),
@@ -112,8 +116,52 @@ router.get("/api/admin/course", async (req, res) => {
         });
     } catch (error) {
         console.error("Error getting course:", error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({error: "Internal server error"});
     }
 });
+
+router.get("/api/admin/course/:id", async (req, res) => {
+    try {
+        const courseId = req.params.id;
+
+        const course = await Course.findOne({
+            _id: courseId
+        });
+
+        if(course){
+            const imageUrl = await s3Service.getImageUrl(course.thumbnailId);
+            const videos=await Video.find({
+                courseId: courseId
+            });
+
+            const modifiedVideos=[];
+            for(const video of videos){
+                const imageUrl = await s3Service.getImageUrl(video.thumbnail);
+                modifiedVideos.push({
+                    id: video._id,
+                    title: video.title,
+                    thumbnailUrl: imageUrl,
+                });
+            }
+
+            const courseResponse = {
+                id: course.get("_id"),
+                title: course.get("title"),
+                description: course.get("description"),
+                price: course.get("price"),
+                createdAt: course.get("createdAt"),
+                updatedAt: course.get("updatedAt"),
+                thumbnailUrl: imageUrl,
+                videos:modifiedVideos
+            };
+            return res.status(200).json(courseResponse);
+        }else {
+            return res.status(404).json({message: "Course not found"});
+        }
+    } catch (error) {
+        console.error("Error getting course:", error);
+        res.status(500).json({error: "Internal server error"});
+    }
+})
 
 export default router;

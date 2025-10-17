@@ -3,13 +3,12 @@ import Student from "../models/Admin.js";
 
 const router = express.Router();
 
-router.post("/", async (req, res) => {
+router.post("/api/admin/admin-add", async (req, res) => {
     try {
         const {name, email, phone, password} = req.body;
         const student = await Student.create({
             name,email,phone,password,
         });
-        student.password = '';
         res.json({success: true,message:"Admin created successfully", student});
     } catch (e) {
         console.error(e);

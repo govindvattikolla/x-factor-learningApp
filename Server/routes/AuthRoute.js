@@ -46,6 +46,18 @@ authRouter.post('/api/login', async (req, res) => {
     }
 });
 
+// authRouter.post('/api/register', async (req, res) => {
+//    try {
+//
+//    } catch (e) {
+//        console.error("Error occurred while login " + e);
+//        res.status(500).send({
+//            error: e.message,
+//            message: 'Internal Server Error',
+//        })
+//    }
+// });
+
 export default authRouter;
 
 

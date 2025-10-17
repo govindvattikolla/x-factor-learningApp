@@ -22,7 +22,7 @@ const upload = multer({
             const extension = path.extname(file.originalname);
             if (file.fieldname === 'video') {
                 cb(null, `course-videos/${fileName}${extension}`);
-            } else if (file.fieldname === 'thumbnail') {
+            } else if (file.fieldname === 'thumbnail' || file.fieldname === 'video_thumbnail' ) {
                 cb(null, `course-thumbnails/${fileName}${extension}`);
             } else if (file.fieldname === 'profile') {
                 cb(null, `profile/${fileName}${extension}`);

@@ -25,6 +25,15 @@ AdminSchema.pre("save", async function (next) {
     }
 });
 
+AdminSchema.pre("find", async function (next) {
+    try {
+        this.password = ''
+        next();
+    } catch (err) {
+        next(err);
+    }
+});
+
 AdminSchema.methods.comparePassword = async function (candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
