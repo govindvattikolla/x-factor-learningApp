@@ -10,6 +10,7 @@ import UploadRoute from "./routes/UploadRoute.js";
 import AuthRoute from "./routes/AuthRoute.js";
 import RoleCheck from "./middleware/RoleCheck.js";
 import "./jobs/index.js";
+import StaticRoute from "./routes/StaticRoute.js";
 
 dotenv.config();
 connectDB().then(() => {
@@ -32,6 +33,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 app.use(RoleCheck);
+app.use(StaticRoute);
 app.use(AuthRoute);
 app.use(courseRoutes);
 app.use(studentRoutes);

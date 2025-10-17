@@ -64,7 +64,7 @@ class S3Service {
         const filePath = path.join(localDir, key.replace(/\//g, "_"));
 
         if (fs.existsSync(filePath)) {
-            return encrypt(key);
+            return encrypt(key.replace(/\//g, "_"));
         }
 
 
@@ -82,9 +82,8 @@ class S3Service {
             stream.on("error", reject);
             writeStream.on("finish", resolve);
         });
-        return encrypt(key);
+        return encrypt(key.replace(/\//g, "_"));
     }
-
 }
 
 export default new S3Service();
