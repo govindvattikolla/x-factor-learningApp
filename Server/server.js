@@ -9,6 +9,7 @@ import AdminRoute from "./routes/AdminRoute.js";
 import UploadRoute from "./routes/UploadRoute.js";
 import AuthRoute from "./routes/AuthRoute.js";
 import RoleCheck from "./middleware/RoleCheck.js";
+import "./jobs/index.js";
 
 dotenv.config();
 connectDB().then(() => {
@@ -37,6 +38,9 @@ app.use(studentRoutes);
 app.use(sessionRoutes);
 app.use(UploadRoute);
 app.use(AdminRoute);
+app.all("/api/", (req, res) => {
+    res.status(404).json({error: "Route not found"});
+})
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -3,6 +3,7 @@ import Course from "../models/Courses.js";
 import {deleteFromS3, upload} from "../config/s3Config.js";
 import Video from "../models/Video.js";
 import mongoose from "mongoose";
+import s3Service from "../service/S3Service.js";
 
 const router = express.Router();
 
@@ -66,15 +67,40 @@ router.post("/api/admin/course/add", upload.fields([
     }
 });
 
-router.get("/api/admin/course",async (req, res) => {
+router.get("/api/admin/course", async (req, res) => {
     try {
-        const data= await Course.find();
-        return res.status(200).json(data);
+        const courses = await Course.find().populate("videos");
+
+        const result = await Promise.all(
+            courses.map(async (course) => {
+                const obj = course.toObject();
+                if (obj.thumbnailId) {
+                    obj.thumbnailUrl = await s3Service.getImageUrl(obj.thumbnailId);
+                    delete obj.thumbnailId;
+                }
+
+                if (obj.videos && obj.videos.length) {
+                    obj.videos = await Promise.all(
+                        obj.videos.map(async (video) => {
+                            if (video.thumbnail) {
+                                video.thumbnail = await s3Service.getImageUrl(video.thumbnail);
+                            }
+                            return video;
+                        })
+                    );
+                }
+
+                return obj;
+            })
+        );
+
+        res.json(result);
     } catch (error) {
         console.error("Error getting course:", error);
-        res.status(500).json({error: "Internal server error"});
+        res.status(500).json({ error: "Internal server error" });
     }
 });
+
 
 
 export default router;
