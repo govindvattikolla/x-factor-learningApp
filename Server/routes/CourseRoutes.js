@@ -4,7 +4,6 @@ import {deleteFromS3, upload} from "../config/s3Config.js";
 import Video from "../models/Video.js";
 import mongoose from "mongoose";
 import s3Service from "../service/S3Service.js";
-import courses from "../models/Courses.js";
 
 const router = express.Router();
 
@@ -137,9 +136,11 @@ router.get("/api/admin/course/:id", async (req, res) => {
             const modifiedVideos=[];
             for(const video of videos){
                 const imageUrl = await s3Service.getImageUrl(video.thumbnail);
+                const singedUrl=await s3Service.getPresignedUrl(video.key);
                 modifiedVideos.push({
                     id: video._id,
                     title: video.title,
+                    url:singedUrl,
                     thumbnailUrl: imageUrl,
                 });
             }
