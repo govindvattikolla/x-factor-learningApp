@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 
 const authRouter = express.Router();
 
-authRouter.post('/login', async (req, res) => {
+authRouter.post('/api/login', async (req, res) => {
     try {
         const {role, login, password} = req.body;
         if (role === 'admin') {

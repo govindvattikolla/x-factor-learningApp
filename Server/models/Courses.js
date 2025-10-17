@@ -7,14 +7,7 @@ const CourseSchema = new mongoose.Schema({
         trim: true
     },
     description: String,
-    thumbnail: String,
-    videoSource: {
-        type: String,
-        required: true,
-        enum: ['s3', 'youtube']
-    },
-    key: String,
-    videoPublicId: String,
+    thumbnailId: String,
     price: {
         type: Number,
         required: true,

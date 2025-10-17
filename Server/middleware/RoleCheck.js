@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const AdminAuth = async (req, res, next) => {
+const RoleCheck = async (req, res, next) => {
     try {
         const token = req.headers["authorization"];
         if (!token) {
@@ -9,11 +9,17 @@ const AdminAuth = async (req, res, next) => {
         const bearerToken = token.split(" ")[1];
         if (!bearerToken) return res.status(403).json({ message: "you are not authorized" });
         const tokenDetails = await jwt.verify(bearerToken, process.env.JWT_SECRET);
-        if(tokenDetails.role !== "admin") {
-            return res.status(403).json({ message: "you are not authorized" });
+        const path=req.path.split("/");
+        if(path.length >= 2 && path[1] === 'api' && (path[2] === 'admin' || path[2] === 'user')){
+            if(path[2] === tokenDetails.role ) {
+                req['sessionData'] = tokenDetails;
+                next();
+            } else {
+                return res.status(403).json({message: "you are not authorized"});
+            }
+        } else {
+            next();
         }
-        req['sessionData'] = tokenDetails;
-        next();
     } catch (e) {
         console.error("Error at the admin middleware " + e);
         res.status(500).send({
@@ -21,4 +27,4 @@ const AdminAuth = async (req, res, next) => {
         });
     }
 }
-export default AdminAuth;
+export default RoleCheck;

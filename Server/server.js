@@ -8,8 +8,7 @@ import courseRoutes from "./routes/CourseRoutes.js";
 import AdminRoute from "./routes/AdminRoute.js";
 import UploadRoute from "./routes/UploadRoute.js";
 import AuthRoute from "./routes/AuthRoute.js";
-import ensureDirectoryExistence from "./service/folderMaintaince.js";
-import AdminAuth from "./middleware/AdminAuth.js";
+import RoleCheck from "./middleware/RoleCheck.js";
 
 dotenv.config();
 connectDB().then(() => {
@@ -31,14 +30,13 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
-["./uploads/students/images", "./uploads/sessions/images", "./uploads/courses/images"].forEach(ensureDirectoryExistence);
-
-app.use("/api",AuthRoute);
-app.use("/api/students", studentRoutes);
-app.use("/api/sessions", sessionRoutes);
-app.use("/api/admin/course",AdminAuth,courseRoutes);
-app.use("/api/upload", UploadRoute);
-app.use("/api/admin", AdminRoute);
+app.use(RoleCheck);
+app.use(AuthRoute);
+app.use(courseRoutes);
+app.use(studentRoutes);
+app.use(sessionRoutes);
+app.use(UploadRoute);
+app.use(AdminRoute);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
