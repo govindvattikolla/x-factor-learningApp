@@ -22,6 +22,8 @@ const upload = multer({
                 cb(null, `course-videos/${fileName}`);
             } else if (file.fieldname === 'thumbnail') {
                 cb(null, `course-thumbnails/${fileName}`);
+            } else if (file.fieldname === 'profile') {
+                cb(null, `profile/${fileName}`);
             } else {
                 cb(null, `uploads/${fileName}`);
             }
@@ -37,7 +39,7 @@ const upload = multer({
                 return cb(null, true);
             }
             cb(new Error('Only video files are allowed'));
-        } else if (file.fieldname === 'thumbnail') { // CHANGED: 'image' to 'thumbnail'
+        } else if (file.fieldname === 'thumbnail' || file.fieldname === 'profile' ) {
             const imageTypes = /jpg|jpeg|png|gif|webp/;
             if (imageTypes.test(file.originalname.toLowerCase())) {
                 return cb(null, true);

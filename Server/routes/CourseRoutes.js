@@ -64,26 +64,5 @@ router.post("/add", upload.fields([
     }
 });
 
-// router.get("/", async (req, res) => {
-//     try {
-//         const courses = await Course.find({});
-//         res.json(courses);
-//     } catch (error) {
-//         console.error("Error fetching courses:", error);
-//         res.status(500).json({error: "Internal server error"});
-//     }
-// });
-
-router.get("/:id", async (req, res) => {
-    try {
-        const course = await Course.findById(req.params.id);
-        if (!course) return res.status(404).json({message: "Course not found"});
-        res.json(course);
-    } catch (error) {
-        console.error("Error:", error);
-        res.status(500).json({message: "Server error"});
-    }
-});
-
 
 export default router;
