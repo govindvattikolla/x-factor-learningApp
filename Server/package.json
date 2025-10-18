@@ -16,6 +16,7 @@
     "bcryptjs": "^3.0.2",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
@@ -27,7 +28,8 @@
     "multer-storage-cloudinary": "^4.0.0",
     "node": "^24.10.0",
     "node-cron": "^4.2.1",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "razorpay": "^2.9.6"
   },
   "description": ""
 }

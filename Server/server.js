@@ -2,13 +2,13 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/dbconfig.js";
-import studentRoutes from "./routes/studentRoutes.js";
 import courseRoutes from "./routes/CourseRoutes.js";
 import AdminRoute from "./routes/AdminRoute.js";
 import AuthRoute from "./routes/AuthRoute.js";
 import RoleCheck from "./middleware/RoleCheck.js";
-import "./jobs/index.js";
 import StaticRoute from "./routes/StaticRoute.js";
+import UserRoutes from "./routes/UserRoutes.js";
+import "./jobs/index.js";
 
 dotenv.config();
 connectDB().then(() => {
@@ -34,7 +34,7 @@ app.use(RoleCheck);
 app.use(StaticRoute);
 app.use(AuthRoute);
 app.use(courseRoutes);
-app.use(studentRoutes);
+app.use(UserRoutes);
 app.use(AdminRoute);
 app.all("/api/", (req, res) => {
     res.status(404).json({error: "Route not found"});
