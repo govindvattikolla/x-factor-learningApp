@@ -97,8 +97,7 @@ const SignupPage = () => {
   return (
     <div className="auth-container">
       <div className="auth-wrapper">
-        <AuthAside /> {/* Use AuthAside here */}
-
+        <AuthAside /> 
         <div className="auth-form-container">
           <div className="tabs">
             <div

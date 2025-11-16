@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./Navbar.css"
+import "./Header.css"
 import { Link } from "react-router-dom";
 
 
-export default  function Navbar2() {
+export default  function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleNavbar = () => {
@@ -16,7 +16,7 @@ export default  function Navbar2() {
       <div className="container">
        
         <a className="navbar-brand fw-bold" href="#">
-          <img src="../src/assets/XFactor_mainLogo.jpg" alt="Logo" height={70} className="me-2" />
+          <img src="../" alt="img2" height={70} className="me-2" />
         </a>
 
         {/* Mobile Toggle Button */}
