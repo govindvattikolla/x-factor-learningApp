@@ -2,6 +2,7 @@ import AuthAside from "../../components/Authside.jsx";
 import React, { useState } from "react";
 import axios from "axios";
 import {Mail, Lock, Phone, CheckCircle, AlertCircle,User } from "lucide-react";
+import axiosInstance from "../../service/axiosInstance.js";
 
 const AuthPage = () => {
     const navigate = (path) => console.log(`Navigating to: ${path}`);
@@ -42,7 +43,7 @@ const AuthPage = () => {
 
         if (activeTab === "login") {
             try {
-                const response = await axios.post(`${BASE_URL}/api/login`, {
+                const response = await axiosInstance.post(`/api/login`, {
                     role: formData.role,
                     login: formData.login,
                     password: formData.password,
@@ -53,14 +54,13 @@ const AuthPage = () => {
                 localStorage.setItem("role", userRole);
 
                 if (userRole === "admin") navigate("/admin");
-                else navigate("/user");
+                else navigate(`/${userRole}/dashboard`);
 
             } catch (err) {
                 console.error("Login Error:", err);
                 setError(err.response?.data?.message || "Invalid login credentials (Mock API)");
             }
         } else {
-            // --- SIGNUP LOGIC ---
             if (formData.password !== formData.confirmPassword) {
                 setError("Passwords don't match!");
                 setLoading(false);
@@ -68,7 +68,7 @@ const AuthPage = () => {
             }
 
             try {
-                await axios.post(`${BASE_URL}/api/signup`, {
+                await axiosInstance.post(`/api/signup`, {
                     name: formData.name,
                     email: formData.email,
                     phone: formData.phone,
