@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import AuthAside from "./Authside";
-import "./Auth.css";
+import AuthAside from "../../components/Authside.jsx";
+import "../../styles/Auth.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
 const SignupPage = () => {

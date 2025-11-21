@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LandingPage from "./components/LandingPage";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
+import ProtectedRoute from "./components/auth/protectedRoute";
 import AdminDashboard from "./components/dashboards/admindashboard";
 import UserDashboard from "./components/dashboards/userdashboard";
 import { AuthProvider } from "./context/AuthContext";

@@ -1,7 +1,7 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Container, Row, Col, Card, Badge, Button } from 'react-bootstrap'; //for courses
-import "./courses.css" //courses styles
+//import "./courses.css" //courses styles
 
 // Courses section
  const CoursesSection2 = () => {

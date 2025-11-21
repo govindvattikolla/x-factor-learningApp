@@ -1,19 +1,9 @@
-// import Header from "./Website-pages/Header"
-
-import SignupPage from "./Authentication/Register";
-
-// import LoginPage from "./Authentication/Login";
-
-
+import Header from "./pages/Header.jsx";
 
 export default function () {
-    return( 
-    <>
-    {/* <Header/> */}
-    {/* <LoginPage/> */}
-    <SignupPage/>
-    
-    </>
-
-     )
+    return (
+        <>
+            <Header />
+        </>
+    )
 }
