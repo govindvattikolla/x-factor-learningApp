@@ -27,7 +27,7 @@ const Sidebar = () => {
     return (
         <aside className="w-64 bg-white border-r border-gray-200 min-h-screen flex flex-col sticky top-0 left-0">
             <div className="h-16 flex items-center px-6 border-b border-gray-100">
-                <span className="text-xl font-bold text-blue-600">MyApp</span>
+                <span className="text-xl font-bold text-blue-600">XFACTOR</span>
                 <span className="ml-2 text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded uppercase">
             {currentRole}
         </span>
