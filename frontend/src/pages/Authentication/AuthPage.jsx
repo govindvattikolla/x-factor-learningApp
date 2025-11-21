@@ -1,13 +1,14 @@
-import AuthAside from "../../components/Authside.jsx";
 import React, { useState } from "react";
-import axios from "axios";
+import AuthAside from "@/components/Authside.jsx";
+import { useNavigate } from "react-router";
+import axiosInstance from "@/service/axiosInstance.js";
+import {setRole} from "@/features/userSlice.js";
+import { useDispatch } from "react-redux";
 import {Mail, Lock, Phone, CheckCircle, AlertCircle,User } from "lucide-react";
-import axiosInstance from "../../service/axiosInstance.js";
 
 const AuthPage = () => {
-    const navigate = (path) => console.log(`Navigating to: ${path}`);
-
-    const BASE_URL = "http://localhost:8000";
+    let navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const [activeTab, setActiveTab] = useState("login");
     const [error, setError] = useState("");
@@ -52,10 +53,8 @@ const AuthPage = () => {
                 const {token, role: userRole} = response.data;
                 localStorage.setItem("token", token);
                 localStorage.setItem("role", userRole);
-
-                if (userRole === "admin") navigate("/admin");
-                else navigate(`/${userRole}/dashboard`);
-
+                dispatch(setRole(userRole));
+                navigate(`/${userRole}/dashboard`);
             } catch (err) {
                 console.error("Login Error:", err);
                 setError(err.response?.data?.message || "Invalid login credentials (Mock API)");
