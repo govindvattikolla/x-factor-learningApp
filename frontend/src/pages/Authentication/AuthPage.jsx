@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import AuthAside from "@/components/Authside.jsx";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/service/axiosInstance.js";
 import {setRole} from "@/features/userSlice.js";
 import { useDispatch } from "react-redux";
 import {Mail, Lock, Phone, CheckCircle, AlertCircle,User } from "lucide-react";
 
 const AuthPage = () => {
-    let navigate = useNavigate();
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const [activeTab, setActiveTab] = useState("login");
     const [error, setError] = useState("");
@@ -54,7 +54,7 @@ const AuthPage = () => {
                 localStorage.setItem("token", token);
                 localStorage.setItem("role", userRole);
                 dispatch(setRole(userRole));
-                navigate(`/${userRole}/dashboard`);
+                navigate(`/dashboard`);
             } catch (err) {
                 console.error("Login Error:", err);
                 setError(err.response?.data?.message || "Invalid login credentials (Mock API)");

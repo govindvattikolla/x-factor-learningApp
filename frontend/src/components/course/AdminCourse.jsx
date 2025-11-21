@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axiosInstance from "../service/axiosInstance.js";
+import axiosInstance from "@/service/axiosInstance.js";
 
 const CoursesPage = () => {
     const [courses, setCourses] = useState([]);

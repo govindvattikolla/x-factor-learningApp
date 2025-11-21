@@ -4,6 +4,8 @@ import AuthPage from "./pages/Authentication/AuthPage.jsx";
 import Logout from "./pages/Logout.jsx";
 import ProtectedRoute from "./service/ProtectedRoute.jsx";
 import CoursePage from "./pages/CoursePage.jsx";
+import Dashboard from "@/pages/Dashboard.jsx";
+import DashboardLayout from "@/layouts/DashboardLayout.jsx";
 
 function App() {
     return (
@@ -12,8 +14,11 @@ function App() {
                 <Route path="/" element={<Home/>}/>
                 <Route path="/login" element={<AuthPage/>}/>
                 <Route path="/logout" element={<Logout />}/>
-                <Route element={<ProtectedRoute />} path="/admin"  >
-                    <Route path="course" element={<CoursePage />}/>
+                <Route element={<ProtectedRoute />}  >
+                    <Route element={<DashboardLayout /> } path="dashboard" >
+                        <Route path="" element={<Dashboard />}/>
+                        <Route path="course" element={<CoursePage />}/>
+                    </Route>
                 </Route>
             </Routes>
         </BrowserRouter>
