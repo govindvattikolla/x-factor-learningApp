@@ -1,5 +1,6 @@
 import React from 'react';
 import { Play, Clock, Award, MoreHorizontal, Star, LogOut, User as UserIcon } from 'lucide-react';
+import {NavLink} from "react-router-dom";
 
 const myCourses = [
     {
@@ -44,7 +45,7 @@ const UserDashboard = () => {
                             </div>
                             <div className="hidden sm:flex gap-6">
                                 <a href="#" className="text-blue-600 border-b-2 border-blue-600 px-1 py-5 text-sm font-medium">My Learning</a>
-                                <a href="#" className="text-gray-500 hover:text-gray-700 px-1 py-5 text-sm font-medium">Browse Courses</a>
+                                <NavLink to="course" className="text-gray-500 hover:text-gray-700 px-1 py-5 text-sm font-medium">Browse Courses</NavLink>
                             </div>
                         </div>
                         <div className="flex items-center gap-4">

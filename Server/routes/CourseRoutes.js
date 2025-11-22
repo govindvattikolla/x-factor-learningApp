@@ -1,9 +1,10 @@
 import express from "express";
-import Course from "../models/Courses.js";
+import Course from "../models/Course.js";
 import {deleteFromS3, upload} from "../config/s3Config.js";
 import Video from "../models/Video.js";
 import mongoose from "mongoose";
 import s3Service from "../service/S3Service.js";
+import Purchase from "../models/Purchase.js";
 
 const router = express.Router();
 
@@ -119,6 +120,58 @@ router.get("/api/admin/course", async (req, res) => {
     }
 });
 
+router.get("/api/user/course", async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const [courses, total] = await Promise.all([
+            Course.find()
+                .sort({createdAt: -1})
+                .skip(skip)
+                .limit(limit),
+            Course.countDocuments(),
+        ]);
+
+        const result = await Promise.all(
+            courses.map(async (course) => {
+                const obj = course.toObject();
+                delete obj.createdAt;
+                delete obj.updatedAt;
+                delete obj.__v;
+                if (obj.thumbnailId) {
+                    obj.thumbnailUrl = await s3Service.getImageUrl(obj.thumbnailId);
+                    delete obj.thumbnailId;
+                }
+
+                if (obj.videos && obj.videos.length) {
+                    obj.videos = await Promise.all(
+                        obj.videos.map(async (video) => {
+                            if (video.thumbnail) {
+                                video.thumbnail = await s3Service.getImageUrl(video.thumbnail);
+                            }
+                            return video;
+                        })
+                    );
+                }
+
+                return obj;
+            })
+        );
+
+        res.json({
+            total,
+            page,
+            totalPages: Math.ceil(total / limit),
+            data: result,
+        });
+    } catch (error) {
+        console.error("Error getting course:", error);
+        res.status(500).json({error: "Internal server error"});
+    }
+});
+
 router.get("/api/admin/course/:id", async (req, res) => {
     try {
         const courseId = req.params.id;
@@ -164,5 +217,57 @@ router.get("/api/admin/course/:id", async (req, res) => {
         res.status(500).json({error: "Internal server error"});
     }
 })
+
+router.get("/api/user/course/:id", async (req, res) => {
+    try {
+        const courseId = req.params.id;
+        const userId = req.sessionData.id;
+
+        const course = await Course.findById(courseId);
+        if (!course) return res.status(404).json({ error: "Course not found" });
+        let purchased = false;
+        if (userId) {
+            const buyCheck = await Purchase.findOne({ userId, courseID: courseId });
+            console.log(buyCheck);
+            purchased = !!buyCheck;
+        }
+        const videos = await Video.find({ courseId });
+        const modifiedVideos = [];
+
+        for (const v of videos) {
+            const thumbnailUrl = await s3Service.getImageUrl(v.thumbnail);
+
+            let videoUrl = "LOCKED";
+
+            if (purchased) {
+                videoUrl = await s3Service.getPresignedUrl(v.key);
+            }
+
+            modifiedVideos.push({
+                id: v._id,
+                title: v.title,
+                thumbnailUrl,
+                url: videoUrl,
+            });
+        }
+
+        return res.json({
+            course: {
+                id: course._id,
+                title: course.title,
+                description: course.description,
+                price: course.price,
+                thumbnailUrl: await s3Service.getImageUrl(course.thumbnailId),
+            },
+            videos: modifiedVideos,
+            purchased,
+        });
+
+    } catch (error) {
+        console.error("Error:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+});
+
 
 export default router;
