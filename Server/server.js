@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import fs from "fs";
 import connectDB from "./config/dbconfig.js";
 import courseRoutes from "./routes/CourseRoutes.js";
 import AdminRoute from "./routes/AdminRoute.js";
@@ -8,6 +9,12 @@ import AuthRoute from "./routes/AuthRoute.js";
 import RoleCheck from "./middleware/RoleCheck.js";
 import StaticRoute from "./routes/StaticRoute.js";
 import UserRoutes from "./routes/UserRoutes.js";
+if (!fs.existsSync("uploads")) {
+    fs.mkdirSync("uploads", { recursive: true });
+    console.log("📁 Folder created: uploads");
+} else {
+    console.log("📁 Folder already exists: uploads");
+}
 import "./jobs/index.js";
 
 dotenv.config();
