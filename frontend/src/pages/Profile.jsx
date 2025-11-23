@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import axiosInstance from "@/service/axiosInstance";
 import { useNavigate } from "react-router-dom";
+import {useSelector} from "react-redux";
 
 const Profile = () => {
+    const data=useSelector(state => state.user);
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -13,8 +14,7 @@ const Profile = () => {
 
     const fetchProfile = async () => {
         try {
-            const res = await axiosInstance.get("/api/user/me");
-            setUser(res.data);
+            setUser(data);
             setLoading(false);
         } catch (error) {
             console.error("Error fetching profile", error);

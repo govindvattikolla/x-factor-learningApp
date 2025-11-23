@@ -137,7 +137,6 @@ router.get("/api/user/course", async (req, res) => {
         const result = await Promise.all(
             courses.map(async (course) => {
                 const obj = course.toObject();
-                delete obj.createdAt;
                 delete obj.updatedAt;
                 delete obj.__v;
                 if (obj.thumbnailId) {

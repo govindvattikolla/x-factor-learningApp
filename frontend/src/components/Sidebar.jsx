@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import { NavLink } from "react-router-dom";
-import { useSelector } from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {
     LogOut,
     LayoutDashboard,
@@ -12,6 +12,8 @@ import {
     Menu,
     X,
 } from "lucide-react";
+import axiosInstance from "@/service/axiosInstance.js";
+import {setUser} from "@/features/userSlice.js";
 
 const MENU_ITEMS = {
     admin: [
@@ -30,10 +32,29 @@ const MENU_ITEMS = {
 
 const Sidebar = () => {
     const [isMobileOpen, setIsMobileOpen] = useState(false);
+    const dispatch = useDispatch();
 
     const { role } = useSelector((state) => state.user || { role: "user" });
     const currentRole = role || "user";
     const linksToRender = MENU_ITEMS[currentRole] || MENU_ITEMS["user"];
+
+    const fetchProfile = async () => {
+        try {
+            const res = await axiosInstance.get("/api/user/me");
+            const data = res.data;
+            if(!data.image){
+                data.image ="https://placehold.co/150";
+            }
+            dispatch(setUser(res.data));
+
+        } catch (error) {
+            console.error("Error fetching profile", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchProfile();
+    });
 
     return (
         <>
