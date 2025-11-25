@@ -242,13 +242,32 @@ router.get("/api/user/course/:id", async (req, res) => {
                 videoUrl = await s3Service.getPresignedUrl(v.key);
             }
 
+            const progress = await UserProgress.findOne({
+                userId,
+                courseId,
+                videoId: v._id
+            });
+
             modifiedVideos.push({
                 id: v._id,
                 title: v.title,
                 thumbnailUrl,
                 url: videoUrl,
+                watchedPercentage: progress?.watchedPercentage || 0,
+                isCompleted: progress?.isCompleted || false,
+                lastWatchedAt: progress?.lastWatchedAt || 0
             });
         }
+
+        const totalVideos = videos.length;
+        const completedVideos = await UserProgress.countDocuments({
+            userId,
+            courseId,
+            isCompleted: true
+        });
+
+        const completionPercentage = totalVideos ? Math.round((completedVideos / totalVideos) * 100) : 0;
+
 
         return res.json({
             course: {
@@ -257,14 +276,41 @@ router.get("/api/user/course/:id", async (req, res) => {
                 description: course.description,
                 price: course.price,
                 thumbnailUrl: await s3Service.getImageUrl(course.thumbnailId),
+                completionPercentage
             },
             videos: modifiedVideos,
             purchased,
         });
 
+
     } catch (error) {
         console.error("Error:", error);
         return res.status(500).json({ error: "Internal server error" });
+    }
+});
+
+router.put("/api/user/course/progress/update", async (req, res) => {
+    try {
+        const { courseId, videoId, watchedPercentage, lastWatchedAt } = req.body;
+        const userId = req.sessionData?.id;
+
+        if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+        const progress = await UserProgress.findOneAndUpdate(
+            { userId, courseId, videoId },
+            {
+                watchedPercentage,
+                lastWatchedAt,
+                isCompleted: watchedPercentage >= 90
+            },
+            { new: true, upsert: true }
+        );
+
+        return res.json({ success: true, progress });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 
