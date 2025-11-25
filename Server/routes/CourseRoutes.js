@@ -5,6 +5,7 @@ import Video from "../models/Video.js";
 import mongoose from "mongoose";
 import s3Service from "../service/S3Service.js";
 import Purchase from "../models/Purchase.js";
+import UserProgress from "../models/UserProgress.js";
 
 const router = express.Router();
 

@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const UserProgressSchema = new mongoose.Schema({
+const UserProgress = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -30,11 +30,11 @@ const UserProgressSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-UserProgressSchema.pre("save", function(next){
+UserProgress.pre("save", function(next){
     if (this.watchedPercentage >= 90) {
         this.isCompleted = true;
     }
     next();
 });
 
-export default mongoose.model("UserProgress", UserProgressSchema);
+export default mongoose.model("UserProgress", UserProgress);
