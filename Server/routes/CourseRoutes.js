@@ -12,7 +12,7 @@ const router = express.Router();
 router.post("/api/admin/course/add", upload.fields([
     {name: 'video', maxCount: 1},
     {name: 'thumbnail', maxCount: 1},
-    {name : 'video_thumbnail', maxCount: 1},
+    {name: 'video_thumbnail', maxCount: 1},
 ]), async (req, res) => {
     const videoFile = req.files?.video?.[0];
     const thumbnailFile = req.files?.thumbnail?.[0];
@@ -30,7 +30,7 @@ router.post("/api/admin/course/add", upload.fields([
         const {title, description, price} = req.body;
         const userID = req.sessionData._id;
 
-        if (!title || !description || !price || !videoFile || !thumbnailFile || !videoThumbnail ) {
+        if (!title || !description || !price || !videoFile || !thumbnailFile || !videoThumbnail) {
             await cleanupFiles();
             return res.status(400).json({error: "All fields, including video and thumbnail, are required"});
         }
@@ -54,7 +54,7 @@ router.post("/api/admin/course/add", upload.fields([
         const newVideo = new Video({
             title: `${title} - Introduction`,
             courseId: savedCourse._id,
-            thumbnail:videoThumbnail.key,
+            thumbnail: videoThumbnail.key,
             videoSource: 's3',
             key: videoFile.key,
             addedBy: userID
@@ -180,20 +180,20 @@ router.get("/api/admin/course/:id", async (req, res) => {
             _id: courseId
         });
 
-        if(course){
+        if (course) {
             const imageUrl = await s3Service.getImageUrl(course.thumbnailId);
-            const videos=await Video.find({
+            const videos = await Video.find({
                 courseId: courseId
             });
 
-            const modifiedVideos=[];
-            for(const video of videos){
+            const modifiedVideos = [];
+            for (const video of videos) {
                 const imageUrl = await s3Service.getImageUrl(video.thumbnail);
-                const singedUrl=await s3Service.getPresignedUrl(video.key);
+                const singedUrl = await s3Service.getPresignedUrl(video.key);
                 modifiedVideos.push({
                     id: video._id,
                     title: video.title,
-                    url:singedUrl,
+                    url: singedUrl,
                     thumbnailUrl: imageUrl,
                 });
             }
@@ -206,10 +206,10 @@ router.get("/api/admin/course/:id", async (req, res) => {
                 createdAt: course.get("createdAt"),
                 updatedAt: course.get("updatedAt"),
                 thumbnailUrl: imageUrl,
-                videos:modifiedVideos
+                videos: modifiedVideos
             };
             return res.status(200).json(courseResponse);
-        }else {
+        } else {
             return res.status(404).json({message: "Course not found"});
         }
     } catch (error) {
@@ -224,14 +224,14 @@ router.get("/api/user/course/:id", async (req, res) => {
         const userId = req.sessionData.id;
 
         const course = await Course.findById(courseId);
-        if (!course) return res.status(404).json({ error: "Course not found" });
+        if (!course) return res.status(404).json({error: "Course not found"});
         let purchased = false;
         if (userId) {
-            const buyCheck = await Purchase.findOne({ userId, courseID: courseId });
+            const buyCheck = await Purchase.findOne({userId, courseID: courseId});
             console.log(buyCheck);
             purchased = !!buyCheck;
         }
-        const videos = await Video.find({ courseId });
+        const videos = await Video.find({courseId});
         const modifiedVideos = [];
 
         for (const v of videos) {
@@ -286,34 +286,46 @@ router.get("/api/user/course/:id", async (req, res) => {
 
     } catch (error) {
         console.error("Error:", error);
-        return res.status(500).json({ error: "Internal server error" });
+        return res.status(500).json({error: "Internal server error"});
     }
 });
 
 router.put("/api/user/course/progress/update", async (req, res) => {
     try {
-        const { courseId, videoId, watchedPercentage, lastWatchedAt } = req.body;
+        const {courseId, videoId, watchedPercentage, lastWatchedAt} = req.body;
         const userId = req.sessionData?.id;
 
-        if (!userId) return res.status(401).json({ error: "Unauthorized" });
+        if (!userId) return res.status(401).json({error: "Unauthorized"});
 
         const progress = await UserProgress.findOneAndUpdate(
-            { userId, courseId, videoId },
+            {userId, courseId, videoId},
             {
                 watchedPercentage,
                 lastWatchedAt,
                 isCompleted: watchedPercentage >= 90
             },
-            { new: true, upsert: true }
+            {new: true, upsert: true}
         );
 
-        return res.json({ success: true, progress });
+        return res.json({success: true, progress});
 
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).json({error: "Internal server error"});
     }
 });
 
+router.get("/api/user/my-courses", async (req, res) => {
+    try {
+        const userId = req.sessionData?.id;
+        const purchases = await Purchase.find({
+            userId: userId,
+        }).populate("courseID");
+        return res.json({purchases});
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({error: "Internal server error"});
+    }
+});
 
 export default router;

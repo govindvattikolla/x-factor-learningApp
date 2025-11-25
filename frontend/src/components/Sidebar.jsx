@@ -10,7 +10,7 @@ import {
     User,
     ShoppingBag,
     Menu,
-    X,
+    X, Video,
 } from "lucide-react";
 import axiosInstance from "@/service/axiosInstance.js";
 import {setUser} from "@/features/userSlice.js";
@@ -24,6 +24,7 @@ const MENU_ITEMS = {
     ],
     user: [
         { name: "My Dashboard", path: "/dashboard", icon: <LayoutDashboard size={20} /> },
+        { name: "courses", path: "/dashboard/course", icon: <Video size={20} /> },
         { name: "My Profile", path: "/dashboard/profile", icon: <User size={20} /> },
         { name: "My Orders", path: "/dashboard/orders", icon: <ShoppingBag size={20} /> },
         //{ name: "Settings", path: "/dashboard/settings", icon: <Settings size={20} /> },

@@ -9,9 +9,8 @@ const SingleCourse = () => {
     const [videos, setVideos] = useState([]);
     const [purchased, setPurchased] = useState(false);
     const [loading, setLoading] = useState(true);
-
-    // State to track the currently playing video
     const [selectedVideo, setSelectedVideo] = useState(null);
+    const [progressMap, setProgressMap] = useState({});
 
     useEffect(() => {
         fetchCourse();
@@ -20,13 +19,33 @@ const SingleCourse = () => {
     const fetchCourse = async () => {
         try {
             const res = await axiosInstance.get(`/api/user/course/${id}`);
+
             setCourse(res.data.course);
-            setVideos(res.data.videos);
             setPurchased(res.data.purchased);
 
-            // If purchased and videos exist, auto-select the first video
-            if (res.data.purchased && res.data.videos.length > 0) {
-                setSelectedVideo(res.data.videos[0]);
+            // add progress keys into videos with fallback
+            const updatedVideos = res.data.videos.map(v => ({
+                ...v,
+                watchedPercentage: v.watchedPercentage || 0,
+                isCompleted: v.isCompleted || false,
+                lastWatchedAt: v.lastWatchedAt || 0,
+            }));
+
+            setVideos(updatedVideos);
+
+            // create map for quick lookup
+            const map = {};
+            updatedVideos.forEach(v => {
+                map[v.id] = {
+                    watchedPercentage: v.watchedPercentage,
+                    isCompleted: v.isCompleted,
+                    lastWatchedAt: v.lastWatchedAt,
+                };
+            });
+            setProgressMap(map);
+
+            if (res.data.purchased && updatedVideos.length > 0) {
+                setSelectedVideo(updatedVideos[0]);
             }
 
             setLoading(false);
@@ -35,6 +54,58 @@ const SingleCourse = () => {
         }
     };
 
+    // -----------------------------
+    // SAVE PROGRESS TO BACKEND
+    // -----------------------------
+    const saveProgress = async (videoId, watchedPercentage, lastWatchedAt) => {
+        try {
+            await axiosInstance.put("/api/user/course/progress/update", {
+                courseId: id,
+                videoId,
+                watchedPercentage,
+                lastWatchedAt
+            });
+
+            // update UI instantly
+            setProgressMap(prev => ({
+                ...prev,
+                [videoId]: {
+                    watchedPercentage,
+                    lastWatchedAt,
+                    isCompleted: watchedPercentage >= 90
+                }
+            }));
+
+        } catch (err) {
+            console.log("Progress update failed:", err);
+        }
+    };
+
+    // -----------------------------
+    // AUTO SAVE EVERY 5 SECONDS
+    // -----------------------------
+    useEffect(() => {
+        if (!purchased || !selectedVideo) return;
+
+        const videoElement = document.getElementById("courseVideo");
+        if (!videoElement) return;
+
+        const interval = setInterval(() => {
+            const currentTime = videoElement.currentTime || 0;
+            const duration = videoElement.duration || 0;
+
+            if (duration > 0) {
+                const watchedPercentage = Math.round((currentTime / duration) * 100);
+                saveProgress(selectedVideo.id, watchedPercentage, currentTime);
+            }
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [selectedVideo, purchased]);
+
+    // -----------------------------
+    // BUY COURSE
+    // -----------------------------
     const buyCourse = async () => {
         try {
             await axiosInstance.post(`/api/user/course/${id}/buy`, {
@@ -42,15 +113,12 @@ const SingleCourse = () => {
             });
 
             alert("Course purchased successfully!");
-            setPurchased(true);
-            // Refresh data to unlock videos
             fetchCourse();
         } catch (error) {
             alert(error.response?.data?.error || "Failed to purchase");
         }
     };
 
-    // Helper to construct URL
     const getAssetUrl = (path) => {
         return path
             ? `${import.meta.env.VITE_BACKEND_URL ?? ''}/static/${path}`
@@ -67,25 +135,27 @@ const SingleCourse = () => {
 
     return (
         <div className="max-w-7xl mx-auto p-4 mt-4">
-            {/* Grid Layout: Stacked on mobile, 3 columns on desktop (2 for player, 1 for list) */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                {/* --- LEFT SECTION: Video Player & Course Details --- */}
+                {/* LEFT SIDE: VIDEO PLAYER */}
                 <div className="lg:col-span-2">
                     <div className="bg-black rounded-lg overflow-hidden shadow-lg aspect-video relative">
                         {purchased && selectedVideo ? (
                             <video
-                                // Key is important: forces react to reload element when video changes
+                                id="courseVideo"
                                 key={selectedVideo.id}
                                 controls
                                 className="w-full h-full object-contain"
-                                src={selectedVideo.url} // Assuming video object has a 'url' property
+                                src={selectedVideo.url}
                                 poster={getAssetUrl(selectedVideo.thumbnailUrl)}
-                            >
-                                Your browser does not support the video tag.
-                            </video>
+                                onLoadedMetadata={(e) => {
+                                    const resumeTime = progressMap[selectedVideo.id]?.lastWatchedAt || 0;
+                                    if (resumeTime > 0) {
+                                        e.target.currentTime = resumeTime;
+                                    }
+                                }}
+                            />
                         ) : (
-                            // Show Course Thumbnail/Promo if not purchased or no video selected
                             <div className="w-full h-full relative">
                                 <img
                                     src={getAssetUrl(course.thumbnailUrl)}
@@ -108,7 +178,9 @@ const SingleCourse = () => {
                     </div>
 
                     <div className="mt-6">
-                        <h1 className="text-3xl font-bold">{purchased && selectedVideo ? selectedVideo.title : course.title}</h1>
+                        <h1 className="text-3xl font-bold">
+                            {purchased && selectedVideo ? selectedVideo.title : course.title}
+                        </h1>
 
                         {!purchased && (
                             <div className="flex items-center justify-between mt-4 bg-blue-50 p-4 rounded-lg border border-blue-200">
@@ -131,7 +203,7 @@ const SingleCourse = () => {
                     </div>
                 </div>
 
-                {/* --- RIGHT SECTION: Course Content (Playlist) --- */}
+                {/* RIGHT SIDE: VIDEO LIST */}
                 <div className="lg:col-span-1">
                     <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
                         <div className="p-4 bg-gray-50 border-b border-gray-200">
@@ -139,26 +211,30 @@ const SingleCourse = () => {
                             <p className="text-sm text-gray-500">{videos.length} Lessons</p>
                         </div>
 
-                        {/* Scrollable List */}
                         <div className="max-h-[600px] overflow-y-auto">
                             {videos.map((video, index) => (
                                 <div
                                     key={video.id}
                                     onClick={() => {
-                                        if(purchased) setSelectedVideo(video);
+                                        if (purchased) setSelectedVideo(video);
                                         else alert("Please buy the course to watch.");
                                     }}
-                                    className={`p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition flex items-start gap-3 
+                                    className={`
+                                        p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition flex items-start gap-3 
                                         ${selectedVideo?.id === video.id ? 'bg-blue-50 border-l-4 border-l-blue-600' : ''}
                                     `}
                                 >
-                                    <div className="mt-1">
-                                        {purchased ? (
-                                            <span className="text-gray-600">
-                                                {selectedVideo?.id === video.id ? '▶' : (index + 1)}
-                                            </span>
-                                        ) : (
+
+                                    {/* Progress Column */}
+                                    <div className="mt-1 flex flex-col items-center w-10">
+                                        {!purchased ? (
                                             <span className="text-red-500 text-sm">🔒</span>
+                                        ) : progressMap[video.id]?.isCompleted ? (
+                                            <span className="text-green-600 font-bold text-sm">✔</span>
+                                        ) : (
+                                            <span className="text-gray-600 text-sm">
+                                                {progressMap[video.id]?.watchedPercentage || 0}%
+                                            </span>
                                         )}
                                     </div>
 
@@ -171,6 +247,7 @@ const SingleCourse = () => {
                                 </div>
                             ))}
                         </div>
+
                     </div>
                 </div>
 
