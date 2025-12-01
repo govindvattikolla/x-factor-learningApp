@@ -173,7 +173,10 @@ const AuthPage = () => {
                             <div className="space-y-2">
                                 <label className="block text-sm font-medium text-gray-700">Phone or Email</label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
+                                    {/*<div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">*/}
+                                    {/*    <User className="w-5 h-5 text-gray-400" />*/}
+                                    {/*</div>*/}
+
                                     <input
                                         type="text"
                                         name="login"
@@ -181,7 +184,7 @@ const AuthPage = () => {
                                         value={formData.login}
                                         onChange={handleInputChange}
                                         required
-                                        className="w-full p-3 pl-10 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400"
+                                        className="w-full p-3 pl-12 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400"
                                     />
                                 </div>
                             </div>
@@ -192,8 +195,8 @@ const AuthPage = () => {
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-gray-700">Full Name</label>
                                     <div className="relative">
-                                        <User
-                                            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
+                                        {/*<User*/}
+                                        {/*    className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>*/}
                                         <input
                                             type="text"
                                             name="name"
@@ -209,8 +212,8 @@ const AuthPage = () => {
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-gray-700">Email Address</label>
                                     <div className="relative">
-                                        <Mail
-                                            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
+                                        {/*<Mail*/}
+                                        {/*    className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>*/}
                                         <input
                                             type="email"
                                             name="email"
@@ -226,8 +229,8 @@ const AuthPage = () => {
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-gray-700">Phone Number</label>
                                     <div className="relative">
-                                        <Phone
-                                            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
+                                        {/*<Phone*/}
+                                        {/*    className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>*/}
                                         <input
                                             type="text"
                                             name="phone"
@@ -245,7 +248,7 @@ const AuthPage = () => {
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700">Password</label>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
+                                {/*<Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>*/}
                                 <input
                                     type="password"
                                     name="password"
@@ -262,8 +265,8 @@ const AuthPage = () => {
                             <div className="space-y-2">
                                 <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
                                 <div className="relative">
-                                    <CheckCircle
-                                        className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
+                                    {/*<CheckCircle*/}
+                                    {/*    className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>*/}
                                     <input
                                         type="password"
                                         name="confirmPassword"

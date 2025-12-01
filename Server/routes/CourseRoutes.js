@@ -315,16 +315,27 @@ router.put("/api/user/course/progress/update", async (req, res) => {
     }
 });
 
+
 router.get("/api/user/my-courses", async (req, res) => {
     try {
         const userId = req.sessionData?.id;
         const purchases = await Purchase.find({
             userId: userId,
         }).populate("courseID");
-        return res.json({purchases});
+
+        const purchasesWithImages = await Promise.all(purchases.map(async (purchase) => {
+            const purchaseObj = purchase.toObject();
+
+            if (purchaseObj.courseID && purchaseObj.courseID.thumbnailId) {
+                purchaseObj.courseID.thumbnailUrl = await s3Service.getImageUrl(purchaseObj.courseID.thumbnailId);
+            }
+            return purchaseObj;
+        }));
+
+        return res.json({ purchases: purchasesWithImages });
     } catch (error) {
         console.log(error);
-        res.status(500).json({error: "Internal server error"});
+        res.status(500).json({ error: "Internal server error" });
     }
 });
 

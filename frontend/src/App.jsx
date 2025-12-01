@@ -8,6 +8,7 @@ import Dashboard from "@/pages/Dashboard.jsx";
 import DashboardLayout from "@/layouts/DashboardLayout.jsx";
 import SingleCourse from "@/pages/SingleCourse.jsx";
 import Profile from "@/pages/Profile.jsx";
+import Purchases from "@/pages/Purchases.jsx";
 
 function App() {
     return (
@@ -19,6 +20,7 @@ function App() {
                 <Route element={<ProtectedRoute />}  >
                     <Route element={<DashboardLayout /> } path="/dashboard" >
                         <Route path="" element={<Dashboard />}/>
+                        <Route path="purchases" element={<Purchases />} />
                         <Route path="profile" element={<Profile />} />
                         <Route path="course" element={<CoursePage />}/>
                         <Route path="course/:id" element={<SingleCourse />}/>
