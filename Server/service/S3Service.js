@@ -94,7 +94,6 @@ class S3Service {
     }
 
     async getSignedM3U8(masterKey,userID,courseID,expiresIn = 60 * 5) {
-        console.log(userID,courseID);
         const filename=userID+courseID+".m3u8";
         if (fs.existsSync(path.join(this.localDir,filename))) {
             return encrypt(filename);

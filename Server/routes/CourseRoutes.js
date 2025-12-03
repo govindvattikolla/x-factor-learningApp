@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import s3Service from "../service/S3Service.js";
 import Purchase from "../models/Purchase.js";
 import UserProgress from "../models/UserProgress.js";
+import CourseProgress from "../models/CourseProgress.js";
 
 const router = express.Router();
 
@@ -224,26 +225,26 @@ router.get("/api/admin/course/:id", async (req, res) => {
 router.get("/api/user/course/:id", async (req, res) => {
     try {
         const courseId = req.params.id;
-        const userId = req.sessionData.id;
+        const userId = req.sessionData?.id;
 
         const course = await Course.findById(courseId);
-        if (!course) return res.status(404).json({error: "Course not found"});
+        if (!course) return res.status(404).json({ error: "Course not found" });
+
         let purchased = false;
         if (userId) {
-            const buyCheck = await Purchase.findOne({userId, courseID: courseId});
-            console.log(buyCheck);
+            const buyCheck = await Purchase.findOne({ userId, courseID: courseId });
             purchased = !!buyCheck;
         }
-        const videos = await Video.find({courseId});
+
+        const videos = await Video.find({ courseId });
         const modifiedVideos = [];
 
         for (const v of videos) {
             const thumbnailUrl = await s3Service.getImageUrl(v.thumbnail);
 
             let videoUrl = "LOCKED";
-
             if (purchased) {
-                videoUrl = await s3Service.getSignedM3U8(v.hlsPath,userId,courseId);
+                videoUrl = await s3Service.getSignedM3U8(v.hlsPath, userId, courseId);
             }
 
             const progress = await UserProgress.findOne({
@@ -264,14 +265,31 @@ router.get("/api/user/course/:id", async (req, res) => {
         }
 
         const totalVideos = videos.length;
+
         const completedVideos = await UserProgress.countDocuments({
             userId,
             courseId,
             isCompleted: true
         });
 
-        const completionPercentage = totalVideos ? Math.round((completedVideos / totalVideos) * 100) : 0;
+        const completionPercentage = totalVideos
+            ? Math.round((completedVideos / totalVideos) * 100)
+            : 0;
 
+        const isCourseCompleted = completionPercentage >= 100;
+
+
+        if (userId) {
+            await CourseProgress.findOneAndUpdate(
+                { userId, courseId },
+                {
+                    totalVideos,
+                    completedVideos,
+                    isCompleted: isCourseCompleted
+                },
+                { upsert: true, new: true }
+            );
+        }
 
         return res.json({
             course: {
@@ -280,18 +298,19 @@ router.get("/api/user/course/:id", async (req, res) => {
                 description: course.description,
                 price: course.price,
                 thumbnailUrl: await s3Service.getImageUrl(course.thumbnailId),
-                completionPercentage
+                completionPercentage,
+                isCourseCompleted
             },
             videos: modifiedVideos,
             purchased,
         });
 
-
     } catch (error) {
         console.error("Error:", error);
-        return res.status(500).json({error: "Internal server error"});
+        return res.status(500).json({ error: "Internal server error" });
     }
 });
+
 
 router.put("/api/user/course/progress/update", async (req, res) => {
     try {
@@ -315,6 +334,66 @@ router.put("/api/user/course/progress/update", async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({error: "Internal server error"});
+    }
+});
+
+
+router.post("/api/admin/course/video/add", upload.fields([
+    { name: 'video', maxCount: 1 },
+    { name: 'thumbnail', maxCount: 1 }
+]), async (req, res) => {
+    const videoFile = req.files?.video?.[0];
+    const thumbnailFile = req.files?.thumbnail?.[0];
+    const session = await mongoose.startSession();
+
+    const cleanupFiles = async () => {
+        if (videoFile) await deleteFromS3(videoFile.key);
+        if (thumbnailFile) await deleteFromS3(thumbnailFile.key);
+    };
+
+    try {
+        session.startTransaction();
+        const { title, courseId } = req.body;
+        const userID = req.sessionData?.id;
+
+        if (!title || !courseId || !videoFile || !thumbnailFile) {
+            await cleanupFiles();
+            return res.status(400).json({ error: "Title, Course ID, Video file, and Thumbnail are required." });
+        }
+        const course = await Course.findById(courseId);
+        if (!course) {
+            await cleanupFiles();
+            return res.status(404).json({ error: "Course not found." });
+        }
+        const newVideo = new Video({
+            title: title,
+            courseId: courseId,
+            thumbnail: thumbnailFile.key,
+            videoSource: 's3',
+            rawVideoKey: videoFile.key,
+            hlsPath: null,
+            status: "processing",
+            key: videoFile.key,
+            addedBy: userID
+        });
+
+        await newVideo.save({ session });
+
+        await session.commitTransaction();
+        console.log(`Video "${title}" added to course ${courseId}`);
+
+        res.status(201).json({
+            message: "Video added successfully",
+            videoId: newVideo._id
+        });
+
+    } catch (error) {
+        console.error("Error adding video:", error);
+        await cleanupFiles();
+        await session.abortTransaction();
+        res.status(500).json({ error: "Internal server error" });
+    } finally {
+        await session.endSession();
     }
 });
 

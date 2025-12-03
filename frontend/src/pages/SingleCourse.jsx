@@ -27,7 +27,6 @@ const SingleCourse = () => {
         if (Hls.isSupported()) {
             const hls = new Hls();
             const link = (import.meta.env.VITE_BACKEND_URL  ?? '') +`/static/${selectedVideo.url}`;
-            console.log(link);
             hls.loadSource(link);
             hls.attachMedia(video);
 
