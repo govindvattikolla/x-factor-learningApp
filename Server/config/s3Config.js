@@ -83,4 +83,4 @@ const deleteFromS3 = async (fileKey) => {
     }
 };
 
-export { upload, deleteFromS3 };
+export { upload, deleteFromS3 ,s3Client };

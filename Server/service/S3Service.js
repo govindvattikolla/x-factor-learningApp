@@ -6,8 +6,10 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from "fs";
+import fs_promise from 'node:fs/promises';
 import path from "path";
 import { encrypt } from "./EncryptionService.js";
+import {generateRandomString} from "../service/CommonFunctions.js";
 
 class S3Service {
     constructor() {
@@ -21,7 +23,11 @@ class S3Service {
             },
         });
 
-        this.bucket = process.env.DO_SPACES_BUCKET; // your Space name
+        this.bucket = process.env.DO_SPACES_BUCKET;
+        this.localDir = path.resolve("uploads");
+        if (!fs.existsSync(this.localDir)) {
+            fs.mkdirSync(this.localDir, { recursive: true });
+        }
     }
 
     async uploadFile(filePath, key, contentType = "application/octet-stream") {
@@ -63,12 +69,7 @@ class S3Service {
     }
 
     async getImageUrl(key) {
-        const localDir = path.resolve("uploads");
-        if (!fs.existsSync(localDir)) {
-            fs.mkdirSync(localDir, { recursive: true });
-        }
-
-        const filePath = path.join(localDir, key.replace(/\//g, "_"));
+        const filePath = path.join(this.localDir, key.replace(/\//g, "_"));
 
         if (fs.existsSync(filePath)) {
             return encrypt(key.replace(/\//g, "_"));
@@ -91,6 +92,46 @@ class S3Service {
 
         return encrypt(key.replace(/\//g, "_"));
     }
+
+    async getSignedM3U8(masterKey,userID,courseID,expiresIn = 60 * 5) {
+        console.log(userID,courseID);
+        const filename=userID+courseID+".m3u8";
+        if (fs.existsSync(path.join(this.localDir,filename))) {
+            return encrypt(filename);
+        }
+        const command = new GetObjectCommand({
+            Bucket: this.bucket,
+            Key: masterKey,
+        });
+
+        const response = await this.s3.send(command);
+        const stream = response.Body;
+
+        const m3u8Content = await new Promise((resolve, reject) => {
+            let result = "";
+            stream.on("data", (c) => (result += c.toString()));
+            stream.on("end", () => resolve(result));
+            stream.on("error", reject);
+        });
+
+        const lines = m3u8Content.split("\n");
+        const folder = path.dirname(masterKey);
+
+        const signed = await Promise.all(
+            lines.map(async (line) => {
+                if (line.trim().endsWith(".ts")) {
+                    const segmentKey = `${folder}/${line.trim()}`;
+                    const signedUrl = await this.getPresignedUrl(segmentKey, expiresIn);
+                    return signedUrl;
+                }
+                return line;
+            })
+        );
+        const text=signed.join("\n");
+        await fs_promise.writeFile(path.join(this.localDir,filename),text);
+        return encrypt(filename);
+    }
+
 }
 
 export default new S3Service();

@@ -56,6 +56,9 @@ router.post("/api/admin/course/add", upload.fields([
             courseId: savedCourse._id,
             thumbnail: videoThumbnail.key,
             videoSource: 's3',
+            rawVideoKey: videoFile.key,
+            hlsPath: null,
+            status: "processing",
             key: videoFile.key,
             addedBy: userID
         });
@@ -240,7 +243,7 @@ router.get("/api/user/course/:id", async (req, res) => {
             let videoUrl = "LOCKED";
 
             if (purchased) {
-                videoUrl = await s3Service.getPresignedUrl(v.key);
+                videoUrl = await s3Service.getSignedM3U8(v.hlsPath,userId,courseId);
             }
 
             const progress = await UserProgress.findOne({

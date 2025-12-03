@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
 import axiosInstance from "../service/axiosInstance";
 import { useParams } from "react-router-dom";
+import Hls from "hls.js";
 
 const SingleCourse = () => {
     const { id } = useParams();
+    const videoRef = useRef(null);
 
     const [course, setCourse] = useState(null);
     const [videos, setVideos] = useState([]);
@@ -15,6 +17,38 @@ const SingleCourse = () => {
     useEffect(() => {
         fetchCourse();
     }, []);
+
+    useEffect(() => {
+        if (!selectedVideo) return;
+
+        const video = videoRef.current;
+        if (!video) return;
+
+        if (Hls.isSupported()) {
+            const hls = new Hls();
+            const link = (import.meta.env.VITE_BACKEND_URL  ?? '') +`/static/${selectedVideo.url}`;
+            console.log(link);
+            hls.loadSource(link);
+            hls.attachMedia(video);
+
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                const resumeTime = progressMap[selectedVideo.id]?.lastWatchedAt || 0;
+                if (resumeTime > 0) {
+                    video.currentTime = resumeTime;
+                }
+                video.play();
+            });
+
+        } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+            video.src = selectedVideo.url;
+            video.addEventListener("loadedmetadata", () => {
+                const resumeTime = progressMap[selectedVideo.id]?.lastWatchedAt || 0;
+                if (resumeTime > 0) video.currentTime = resumeTime;
+            });
+        }
+    }, [selectedVideo]);
+
+
 
     const fetchCourse = async () => {
         try {
@@ -54,9 +88,7 @@ const SingleCourse = () => {
         }
     };
 
-    // -----------------------------
-    // SAVE PROGRESS TO BACKEND
-    // -----------------------------
+
     const saveProgress = async (videoId, watchedPercentage, lastWatchedAt) => {
         try {
             await axiosInstance.put("/api/user/course/progress/update", {
@@ -81,9 +113,6 @@ const SingleCourse = () => {
         }
     };
 
-    // -----------------------------
-    // AUTO SAVE EVERY 5 SECONDS
-    // -----------------------------
     useEffect(() => {
         if (!purchased || !selectedVideo) return;
 
@@ -103,9 +132,7 @@ const SingleCourse = () => {
         return () => clearInterval(interval);
     }, [selectedVideo, purchased]);
 
-    // -----------------------------
-    // BUY COURSE
-    // -----------------------------
+
     const buyCourse = async () => {
         try {
             await axiosInstance.post(`/api/user/course/${id}/buy`, {
@@ -137,23 +164,16 @@ const SingleCourse = () => {
         <div className="max-w-7xl mx-auto p-4 mt-4">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                {/* LEFT SIDE: VIDEO PLAYER */}
+
                 <div className="lg:col-span-2">
                     <div className="bg-black rounded-lg overflow-hidden shadow-lg aspect-video relative">
                         {purchased && selectedVideo ? (
                             <video
                                 id="courseVideo"
-                                key={selectedVideo.id}
+                                ref={videoRef}
                                 controls
                                 className="w-full h-full object-contain"
-                                src={selectedVideo.url}
                                 poster={getAssetUrl(selectedVideo.thumbnailUrl)}
-                                onLoadedMetadata={(e) => {
-                                    const resumeTime = progressMap[selectedVideo.id]?.lastWatchedAt || 0;
-                                    if (resumeTime > 0) {
-                                        e.target.currentTime = resumeTime;
-                                    }
-                                }}
                             />
                         ) : (
                             <div className="w-full h-full relative">

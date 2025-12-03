@@ -14,6 +14,9 @@ const VideoSchema = new mongoose.Schema({
         enum: ['s3', 'youtube']
     },
     key: String,
+    hlsPath: String,
+    rawVideoKey: String,
+    status: { type: String, enum: ["processing", "ready", "failed"], default: "processing" },
     videoPublicId: String,
     courseId:  {
         type: mongoose.Schema.Types.ObjectId,
