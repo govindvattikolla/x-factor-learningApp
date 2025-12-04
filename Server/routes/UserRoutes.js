@@ -2,6 +2,7 @@ import express from "express";
 import Purchase from "../models/Purchase.js";
 import Course from "../models/Course.js";
 import User from "../models/User.js";
+import CourseProgress from "../models/CourseProgress.js";
 
 const router = express.Router();
 
@@ -27,6 +28,13 @@ router.post("/api/user/course/:id/buy", async (req, res) => {
         if (already) {
             return res.status(400).json({ error: "Course already purchased" });
         }
+
+        await CourseProgress.create({
+            courseId: courseId,
+            userId: userId,
+            isCompleted: false,
+            totalVideos:course.totalVideos
+        });
 
         await Purchase.create({
             userId,

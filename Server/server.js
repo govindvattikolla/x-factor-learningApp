@@ -18,6 +18,7 @@ if (!fs.existsSync("uploads")) {
 import "./jobs/index.js";
 import {fileURLToPath} from "url";
 import path from "path";
+import DashboardRoute from "./routes/DashboardRoute.js";
 
 dotenv.config();
 connectDB().then(() => {
@@ -44,7 +45,9 @@ app.use(express.static(frontendPath));
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
+
 app.use(RoleCheck);
+app.use(DashboardRoute);
 app.use(StaticRoute);
 app.use(AuthRoute);
 app.use(courseRoutes);

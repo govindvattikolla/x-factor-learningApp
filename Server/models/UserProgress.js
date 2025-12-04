@@ -25,7 +25,7 @@ const UserProgress = new mongoose.Schema({
         default: false
     },
     lastWatchedAt: {
-        type: Number, // seconds
+        type: Number,
         default: 0
     }
 }, { timestamps: true });

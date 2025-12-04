@@ -57,7 +57,7 @@ authRouter.post('/api/signup', async (req, res) => {
        });
 
        if (check) {
-           return res.status(400).json({message: 'email or password already exists'});
+           return res.status(400).json({message: 'email or phone already exists'});
        }
 
        const user = await User.insertOne({

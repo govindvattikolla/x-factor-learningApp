@@ -13,6 +13,11 @@ const CourseSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    totalVideos:{
+        type: Number,
+        required: true,
+        default: 1
+    },
     addedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Admin",
