@@ -25,7 +25,7 @@ DashboardRoute.get("/api/user/dashboard", async (req, res) => {
                 completedVideos:course.completedVideos,
                 totalVideos:course.totalVideos,
                 progress: progressPercentage,
-                courseImage:await s3Service.getImageUrl(course.courseId.thumbnailId),
+                thumbnail:await s3Service.getImageUrl(course.courseId.thumbnailId),
                 title: course.courseId.title,
                 description: course.courseId.description,
             });

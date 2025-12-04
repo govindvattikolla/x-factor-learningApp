@@ -1,37 +1,57 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { Play, Clock, Award, MoreHorizontal, Star, LogOut, User as UserIcon } from 'lucide-react';
 import {NavLink} from "react-router-dom";
 import {useSelector} from "react-redux";
+import axiosInstance from "@/service/axiosInstance.js";
 
-const myCourses = [
-    {
-        _id: '1',
-        title: 'Complete Web Development Bootcamp',
-        thumbnail: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&w=800&q=80',
-        progress: 65,
-        totalVideos: 45,
-        completedVideos: 29
-    },
-    {
-        _id: '2',
-        title: 'Advanced React Patterns & Performance',
-        thumbnail: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=800&q=80',
-        progress: 10,
-        totalVideos: 20,
-        completedVideos: 2
-    },
-    {
-        _id: '3',
-        title: 'Node.js Backend Architecture',
-        thumbnail: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?auto=format&fit=crop&w=800&q=80',
-        progress: 100,
-        totalVideos: 30,
-        completedVideos: 30
-    }
-];
+// const myCourses = [
+//     {
+//         _id: '1',
+//         title: 'Complete Web Development Bootcamp',
+//         thumbnail: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&w=800&q=80',
+//         progress: 65,
+//         totalVideos: 45,
+//         completedVideos: 29
+//     },
+//     {
+//         _id: '2',
+//         title: 'Advanced React Patterns & Performance',
+//         thumbnail: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=800&q=80',
+//         progress: 10,
+//         totalVideos: 20,
+//         completedVideos: 2
+//     },
+//     {
+//         _id: '3',
+//         title: 'Node.js Backend Architecture',
+//         thumbnail: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?auto=format&fit=crop&w=800&q=80',
+//         progress: 100,
+//         totalVideos: 30,
+//         completedVideos: 30
+//     }
+// ];
 
 const UserDashboard = () => {
     const data = useSelector((state) => state.user);
+    const [myCourse, setMyCourse] = useState([]);
+    const [stats,setStats] = useState({
+        "totalEnrolledCourses": 0,
+        "totalCompletedCourses": 0,
+        "totalVideos": 0,
+        "totalCompletedVideos": 0
+    });
+
+    const fetchData=async ()=>{
+        const fetchData=await axiosInstance.get("/api/user/dashboard");
+        setMyCourse(fetchData.data.courses);
+        setStats(fetchData.data.stats);
+    };
+
+    useEffect(() => {
+        fetchData().then((res)=>{
+            console.log(res);
+        })
+    }, []);
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Navbar */}
@@ -67,7 +87,7 @@ const UserDashboard = () => {
                 {/* Welcome Section */}
                 <div className="mb-10">
                     <h1 className="text-3xl font-bold text-gray-900">Welcome back, {data.name}! 👋</h1>
-                    <p className="mt-2 text-gray-600">You have 2 courses in progress. Keep it up!</p>
+                    <p className="mt-2 text-gray-600">You have {stats.totalEnrolledCourses-stats.totalCompletedCourses} courses in progress. Keep it up!</p>
                 </div>
 
                 {/* Stats Row */}
@@ -78,7 +98,7 @@ const UserDashboard = () => {
                         </div>
                         <div>
                             <p className="text-sm text-gray-500">Courses In Progress</p>
-                            <p className="text-xl font-bold text-gray-900">2</p>
+                            <p className="text-xl font-bold text-gray-900">{stats.totalEnrolledCourses-stats.totalCompletedCourses}</p>
                         </div>
                     </div>
                     <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
@@ -87,18 +107,18 @@ const UserDashboard = () => {
                         </div>
                         <div>
                             <p className="text-sm text-gray-500">Certificates Earned</p>
-                            <p className="text-xl font-bold text-gray-900">1</p>
+                            <p className="text-xl font-bold text-gray-900">{stats.totalCompletedCourses}</p>
                         </div>
                     </div>
-                    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-                        <div className="p-3 bg-purple-50 text-purple-600 rounded-lg">
-                            <Clock size={24} />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Learning Hours</p>
-                            <p className="text-xl font-bold text-gray-900">24.5</p>
-                        </div>
-                    </div>
+                    {/*<div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">*/}
+                    {/*    <div className="p-3 bg-purple-50 text-purple-600 rounded-lg">*/}
+                    {/*        <Clock size={24} />*/}
+                    {/*    </div>*/}
+                    {/*    <div>*/}
+                    {/*        <p className="text-sm text-gray-500">Learning Hours</p>*/}
+                    {/*        <p className="text-xl font-bold text-gray-900">24.5</p>*/}
+                    {/*    </div>*/}
+                    {/*</div>*/}
                 </div>
 
                 <div>
@@ -112,10 +132,10 @@ const UserDashboard = () => {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {myCourses.map((course) => (
-                            <div key={course._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group">
+                        {myCourse.map((course) => (
+                            <div key={course.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group">
                                 <div className="relative h-48 bg-gray-200 overflow-hidden">
-                                    <img src={course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                    <img src={(import.meta.env.VITE_BACKEND_URL ?? '' )+'/static/'+course.thumbnail} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
                                     <button className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                         <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transform scale-75 group-hover:scale-100 transition-all">
