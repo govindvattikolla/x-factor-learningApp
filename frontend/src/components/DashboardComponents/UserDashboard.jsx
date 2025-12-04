@@ -1,37 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import { Play, Clock, Award, MoreHorizontal, Star, LogOut, User as UserIcon } from 'lucide-react';
-import {NavLink} from "react-router-dom";
+import {NavLink, useNavigate} from "react-router-dom";
 import {useSelector} from "react-redux";
 import axiosInstance from "@/service/axiosInstance.js";
 
-// const myCourses = [
-//     {
-//         _id: '1',
-//         title: 'Complete Web Development Bootcamp',
-//         thumbnail: 'https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&w=800&q=80',
-//         progress: 65,
-//         totalVideos: 45,
-//         completedVideos: 29
-//     },
-//     {
-//         _id: '2',
-//         title: 'Advanced React Patterns & Performance',
-//         thumbnail: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=800&q=80',
-//         progress: 10,
-//         totalVideos: 20,
-//         completedVideos: 2
-//     },
-//     {
-//         _id: '3',
-//         title: 'Node.js Backend Architecture',
-//         thumbnail: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?auto=format&fit=crop&w=800&q=80',
-//         progress: 100,
-//         totalVideos: 30,
-//         completedVideos: 30
-//     }
-// ];
-
 const UserDashboard = () => {
+    const navigate = useNavigate();
     const data = useSelector((state) => state.user);
     const [myCourse, setMyCourse] = useState([]);
     const [stats,setStats] = useState({
@@ -54,37 +28,7 @@ const UserDashboard = () => {
     }, []);
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Navbar */}
-            {/*<nav className="bg-white border-b border-gray-200 sticky top-0 z-50">*/}
-            {/*    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">*/}
-            {/*        <div className="flex justify-between h-16">*/}
-            {/*            <div className="flex items-center gap-8">*/}
-            {/*                <div className="flex-shrink-0 flex items-center gap-2">*/}
-            {/*                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">*/}
-            {/*                        <Play className="text-white fill-current" size={16} />*/}
-            {/*                    </div>*/}
-            {/*                    <span className="font-bold text-xl text-gray-900">LearnHub</span>*/}
-            {/*                </div>*/}
-            {/*                <div className="hidden sm:flex gap-6">*/}
-            {/*                    <a href="#" className="text-blue-600 border-b-2 border-blue-600 px-1 py-5 text-sm font-medium">My Learning</a>*/}
-            {/*                    <NavLink to="course" className="text-gray-500 hover:text-gray-700 px-1 py-5 text-sm font-medium">Browse Courses</NavLink>*/}
-            {/*                </div>*/}
-            {/*            </div>*/}
-            {/*            <div className="flex items-center gap-4">*/}
-            {/*                <div className="flex items-center gap-2">*/}
-            {/*                    <span className="text-sm font-medium text-gray-700 hidden md:block">John Doe</span>*/}
-            {/*                    <div className="h-9 w-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">*/}
-            {/*                        <UserIcon size={20} />*/}
-            {/*                    </div>*/}
-            {/*                </div>*/}
-            {/*            </div>*/}
-            {/*        </div>*/}
-            {/*    </div>*/}
-            {/*</nav>*/}
-
             <main className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-
-                {/* Welcome Section */}
                 <div className="mb-10">
                     <h1 className="text-3xl font-bold text-gray-900">Welcome back, {data.name}! 👋</h1>
                     <p className="mt-2 text-gray-600">You have {stats.totalEnrolledCourses-stats.totalCompletedCourses} courses in progress. Keep it up!</p>
@@ -163,7 +107,7 @@ const UserDashboard = () => {
                                     </div>
 
                                     <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                                        <button className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+                                        <button className="text-sm font-semibold text-blue-600 hover:text-blue-700" onClick={()=>navigate("course/"+course.id)} >
                                             {course.progress === 0 ? 'Start Course' : 'Continue Learning'}
                                         </button>
                                         <button className="text-gray-400 hover:text-gray-600">
