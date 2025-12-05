@@ -5,7 +5,7 @@ import {fileURLToPath} from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const directory = path.join(__dirname,'../uploads');
+const directory = path.join(__dirname, '../uploads');
 
 console.log(`📁 Watching directory for cleanup: ${directory}`);
 
@@ -21,6 +21,7 @@ cron.schedule('*/10 * * * *', () => {
 
         files.forEach((file) => {
             const filePath = path.join(directory, file);
+            const fileExt = path.extname(file);
 
             fs.stat(filePath, (err, stats) => {
                 if (err) {
@@ -28,21 +29,26 @@ cron.schedule('*/10 * * * *', () => {
                     return;
                 }
 
-
-                const fileMtime = stats.mtime.getTime();
                 const accessTime = stats.atime.getTime();
                 const now = Date.now();
 
-                const fileAgeInHours = (now - accessTime) / (1000 * 60 * 60);
+                const fileAgeInMinutes = (now - accessTime) / (1000 * 60);
 
-                if (fileAgeInHours > 1) {
-                    fs.unlink(filePath, (err) => {
-                        if (err) {
-                            console.error(`❌ Error deleting file ${file}:`, err);
-                            return;
-                        }
-                        console.log(`✅ Successfully deleted ${file}`);
-                    });
+                if (fileExt === '.m3u8') {
+                    if (fileAgeInMinutes > 30) {
+                        fs.unlink(filePath, (err) => {
+                            if (err) return console.error(`❌ Error deleting .m3u8 file ${file}:`, err);
+                            console.log(`🟡 Deleted HLS playlist (m3u8): ${file}`);
+                        });
+                    }
+                } else {
+                    const fileAgeInHours = fileAgeInMinutes / 60;
+                    if (fileAgeInHours > 1) {
+                        fs.unlink(filePath, (err) => {
+                            if (err) return console.error(`❌ Error deleting file ${file}:`, err);
+                            console.log(`🟢 Successfully deleted ${file}`);
+                        });
+                    }
                 }
             });
         });

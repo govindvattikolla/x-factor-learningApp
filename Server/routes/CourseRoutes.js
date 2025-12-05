@@ -280,14 +280,13 @@ router.get("/api/user/course/:id", async (req, res) => {
 
 
         if (userId) {
-            await CourseProgress.findOneAndUpdate(
+            await CourseProgress.updateOne(
                 { userId, courseId },
                 {
                     totalVideos,
                     completedVideos,
                     isCompleted: isCourseCompleted
-                },
-                { upsert: true, new: true }
+                }
             );
         }
 
@@ -329,7 +328,31 @@ router.put("/api/user/course/progress/update", async (req, res) => {
             {new: true, upsert: true}
         );
 
-        return res.json({success: true, progress});
+        const course = await Course.findById(courseId).select("videos");
+        const totalVideos = course?.totalVideos || 0;
+
+        const completedVideos = await UserProgress.countDocuments({
+            userId,
+            courseId,
+            isCompleted: true
+        });
+
+        const isCourseCompleted = completedVideos === totalVideos && totalVideos > 0;
+
+        const courseProgress = await CourseProgress.updateOne(
+            {userId, courseId},
+            {
+                totalVideos,
+                completedVideos,
+                isCompleted: isCourseCompleted
+            }
+        );
+
+        return res.json({
+            success: true,
+            progress,
+            courseProgress
+        });
 
     } catch (error) {
         console.log(error);

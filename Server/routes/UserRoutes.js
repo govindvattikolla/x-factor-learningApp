@@ -51,6 +51,10 @@ router.post("/api/user/payment/verify", async (req, res) => {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature, courseId } = req.body;
         const userId = req.sessionData.id;
 
+        const course = await Course.findById(courseId);
+
+        if (!course) return res.status(404).json({ error: "Course not found" });
+
         const expectedSignature = crypto
             .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
             .update(`${razorpay_order_id}|${razorpay_payment_id}`)
@@ -73,7 +77,8 @@ router.post("/api/user/payment/verify", async (req, res) => {
         await CourseProgress.create({
             courseId,
             userId,
-            isCompleted: false
+            isCompleted: false,
+            totalVideos:course.totalVideos
         });
 
         res.json({ message: "Payment verified, course purchased" });
