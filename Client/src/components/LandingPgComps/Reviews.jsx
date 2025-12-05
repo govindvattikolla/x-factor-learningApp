@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Container, Row, Col, Card } from 'react-bootstrap';//reviews
+import { Container, Row, Col, Card } from 'react-bootstrap';
 
 // reviews section
 

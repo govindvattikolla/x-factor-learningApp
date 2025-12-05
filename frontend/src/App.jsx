@@ -1,5 +1,4 @@
 import {BrowserRouter, Route, Routes} from "react-router-dom";
-import Home from "./pages/Home.jsx";
 import AuthPage from "./pages/Authentication/AuthPage.jsx";
 import Logout from "./pages/Logout.jsx";
 import ProtectedRoute from "./service/ProtectedRoute.jsx";
@@ -9,13 +8,15 @@ import DashboardLayout from "@/layouts/DashboardLayout.jsx";
 import SingleCourse from "@/pages/SingleCourse.jsx";
 import Profile from "@/pages/Profile.jsx";
 import Purchases from "@/pages/Purchases.jsx";
+import LandingPage from "@/pages/LandingPage.jsx";
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<Home/>}/>
+                <Route path="/" element={<LandingPage/>}/>
                 <Route path="/login" element={<AuthPage/>}/>
+                <Route path="/signup" element={<AuthPage/>}/>
                 <Route path="/logout" element={<Logout />}/>
                 <Route element={<ProtectedRoute />}  >
                     <Route element={<DashboardLayout /> } path="/dashboard" >
