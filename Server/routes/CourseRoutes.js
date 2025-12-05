@@ -59,7 +59,7 @@ router.post("/api/admin/course/add", upload.fields([
             videoSource: 's3',
             rawVideoKey: videoFile.key,
             hlsPath: null,
-            status: "processing",
+            status: "queued",
             key: videoFile.key,
             addedBy: userID
         });

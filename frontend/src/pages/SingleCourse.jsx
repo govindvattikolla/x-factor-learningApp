@@ -131,18 +131,57 @@ const SingleCourse = () => {
         return () => clearInterval(interval);
     }, [selectedVideo, purchased]);
 
+    const loadRazorpay = () => {
+        return new Promise((resolve) => {
+            const script = document.createElement("script");
+            script.src = "https://checkout.razorpay.com/v1/checkout.js";
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+    };
 
+
+    // const buyCourse = async () => {
+    //     try {
+    //         await axiosInstance.post(`/api/user/course/${id}/buy`, {
+    //             paymentMethod: "upi",
+    //         });
+    //
+    //         alert("Course purchased successfully!");
+    //         fetchCourse();
+    //     } catch (error) {
+    //         alert(error.response?.data?.error || "Failed to purchase");
+    //     }
+    // };
     const buyCourse = async () => {
-        try {
-            await axiosInstance.post(`/api/user/course/${id}/buy`, {
-                paymentMethod: "upi",
-            });
+        const loaded = await loadRazorpay();
+        if (!loaded) return alert("Failed to load Razorpay");
 
-            alert("Course purchased successfully!");
-            fetchCourse();
-        } catch (error) {
-            alert(error.response?.data?.error || "Failed to purchase");
-        }
+        const { data } = await axiosInstance.post(`/api/user/course/${id}/create-order`);
+
+        const options = {
+            key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+            amount: data.amount,
+            currency: data.currency,
+            name: data.courseName,
+            order_id: data.orderId,
+            handler: async function (response) {
+                await axiosInstance.post("/api/user/payment/verify", {
+                    ...response,
+                    courseId: id,
+                });
+
+                alert("Payment successful!");
+                fetchCourse();
+            },
+            theme: {
+                color: "#0A74DA",
+            },
+        };
+
+        const paymentObject = new window.Razorpay(options);
+        paymentObject.open();
     };
 
     const getAssetUrl = (path) => {

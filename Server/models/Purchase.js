@@ -7,6 +7,19 @@ const PurchaseSchema = new mongoose.Schema(
             ref: "User",
             required: true,
         },
+        orderId: {
+            type: String,
+            required: true,
+        },
+        recipientId: {
+           type: String,
+           required: true,
+        },
+        status:{
+            type: String,
+            required: true,
+            enum: ["pending", "success", "failed", "processing","cancelled"],
+        },
         courseID: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Course",
@@ -14,8 +27,7 @@ const PurchaseSchema = new mongoose.Schema(
         },
         paymentMethod: {
             type: String,
-            required: true,
-            enum: ["credit_card", "debit_card", "upi", "paypal", "cashfree", "other"],
+            enum: ["credit_card", "debit_card", "upi", "paypal", "cashfree","razorpay","other"],
         },
         paymentOn: {
             type: Date,

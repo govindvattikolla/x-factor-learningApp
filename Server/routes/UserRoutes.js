@@ -6,49 +6,84 @@ import CourseProgress from "../models/CourseProgress.js";
 
 const router = express.Router();
 
-router.post("/api/user/course/:id/buy", async (req, res) => {
+import { razorpayInstance } from "../service/razorpayInstance.js";
+import crypto from "crypto";
+
+router.post("/api/user/course/:id/create-order", async (req, res) => {
     try {
         const courseId = req.params.id;
         const userId = req.sessionData.id;
 
-        const { paymentMethod } = req.body;
-
-        if (!paymentMethod) {
-            return res.status(400).json({ error: "Payment method required" });
-        }
         const course = await Course.findById(courseId);
-        if (!course) {
-            return res.status(404).json({ error: "Course not found" });
-        }
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
-        }
-        const already = await Purchase.findOne({ courseID: courseId, userId });
-        if (already) {
-            return res.status(400).json({ error: "Course already purchased" });
-        }
+        if (!course) return res.status(404).json({ error: "Course not found" });
 
-        await CourseProgress.create({
-            courseId: courseId,
-            userId: userId,
-            isCompleted: false,
-            totalVideos:course.totalVideos
-        });
+        const options = {
+            amount: course.price * 100,
+            currency: "INR",
+            receipt: `receipt_${Date.now()}`,
+        };
+
+        const order = await razorpayInstance.orders.create(options);
 
         await Purchase.create({
-            userId,
             courseID: courseId,
-            paymentMethod,
+            userId: userId,
+            status:"pending",
+            recipientId:`receipt_${Date.now()}`,
+            orderId:order.id,
         });
 
-        return res.json({ message: "Course purchased successfully" });
+        res.json({
+            orderId: order.id,
+            amount: order.amount,
+            currency: order.currency,
+            courseName: course.title
+        });
 
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ error: "Internal Server Error" });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: "Payment order creation failed" });
     }
 });
+
+router.post("/api/user/payment/verify", async (req, res) => {
+    try {
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, courseId } = req.body;
+        const userId = req.sessionData.id;
+
+        const expectedSignature = crypto
+            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+            .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+            .digest("hex");
+
+        if (expectedSignature !== razorpay_signature) {
+            return res.status(400).json({ error: "Payment verification failed" });
+        }
+
+        await Purchase.updateOne(
+            {
+                orderId:razorpay_order_id,
+            },
+            {
+                status:'success',
+                paymentOn:Date.now()
+            }
+        );
+
+        await CourseProgress.create({
+            courseId,
+            userId,
+            isCompleted: false
+        });
+
+        res.json({ message: "Payment verified, course purchased" });
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: "Payment verification failed" });
+    }
+});
+
 
 router.get("/api/user/me", async (req, res) => {
     try {

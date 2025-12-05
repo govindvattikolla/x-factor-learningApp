@@ -16,7 +16,7 @@ const VideoSchema = new mongoose.Schema({
     key: String,
     hlsPath: String,
     rawVideoKey: String,
-    status: { type: String, enum: ["processing", "ready", "failed"], default: "processing" },
+    status: { type: String, enum: ["processing", "ready", "failed","queued"], default: "queued" },
     videoPublicId: String,
     courseId:  {
         type: mongoose.Schema.Types.ObjectId,

@@ -19,6 +19,7 @@ import "./jobs/index.js";
 import {fileURLToPath} from "url";
 import path from "path";
 import DashboardRoute from "./routes/DashboardRoute.js";
+import webhookRoute from "./routes/webhookRoute.js";
 
 dotenv.config();
 connectDB().then(() => {
@@ -47,6 +48,7 @@ app.use(express.urlencoded({extended: true}));
 
 
 app.use(RoleCheck);
+app.use(webhookRoute);
 app.use(DashboardRoute);
 app.use(StaticRoute);
 app.use(AuthRoute);

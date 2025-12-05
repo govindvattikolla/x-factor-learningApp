@@ -50,10 +50,11 @@ async function uploadToS3(filePath, key) {
 cron.schedule("*/1 * * * *", async () => {
     console.log("🔍 Checking for videos to process...");
 
-    const video = await Video.findOne({status: "processing"});
+    const video = await Video.findOne({status: "queued"});
     if (!video) return console.log("🎉 No pending videos");
 
     console.log(`🚀 Processing video ${video._id}`);
+    await Video.updateOne({_id: video._id}, {status: "processing"});
 
     const localSource = `${LOCAL_TMP_PATH}/source-${video._id}.mp4`;
     const outputFolder = `${LOCAL_TMP_PATH}/out-${video._id}`;
