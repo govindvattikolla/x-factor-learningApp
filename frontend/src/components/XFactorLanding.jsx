@@ -98,7 +98,8 @@ const XFactorLanding = () => {
 
             <section
                 id="home"
-                className="relative h-screen flex justify-center items-center text-white text-center bg-[url('xfactor-header-img.jpg')] bg-cover bg-center"
+                style={{ backgroundImage: "url('xfactor-header-img.jpg')" }}
+                className="relative h-screen flex justify-center items-center text-white text-center bg-cover bg-center"
             >
                 <div className="absolute inset-0 bg-black/60 z-0"></div>
                 <div className="relative z-10">
