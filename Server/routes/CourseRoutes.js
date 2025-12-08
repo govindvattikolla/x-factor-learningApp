@@ -317,19 +317,24 @@ router.put("/api/user/course/progress/update", async (req, res) => {
         const userId = req.sessionData?.id;
 
         if (!userId) return res.status(401).json({error: "Unauthorized"});
+        const isNowCompleted = watchedPercentage >= 90;
 
         const progress = await UserProgress.findOneAndUpdate(
             {userId, courseId, videoId},
             {
-                watchedPercentage,
-                lastWatchedAt,
-                isCompleted: watchedPercentage >= 90
+                $set: {
+                    watchedPercentage,
+                    lastWatchedAt,
+                },
+                $max: {
+                    isCompleted: isNowCompleted
+                }
             },
             {new: true, upsert: true}
         );
 
         const course = await Course.findById(courseId).select("videos");
-        const totalVideos = course?.totalVideos || 0;
+        const totalVideos = course?.totalVideos || 1;
 
         const completedVideos = await UserProgress.countDocuments({
             userId,
@@ -342,7 +347,6 @@ router.put("/api/user/course/progress/update", async (req, res) => {
         const courseProgress = await CourseProgress.updateOne(
             {userId, courseId},
             {
-                totalVideos,
                 completedVideos,
                 isCompleted: isCourseCompleted
             }
@@ -395,7 +399,7 @@ router.post("/api/admin/course/video/add", upload.fields([
             videoSource: 's3',
             rawVideoKey: videoFile.key,
             hlsPath: null,
-            status: "processing",
+            status: "queued",
             key: videoFile.key,
             addedBy: userID
         });
