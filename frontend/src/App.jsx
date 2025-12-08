@@ -8,13 +8,13 @@ import DashboardLayout from "@/layouts/DashboardLayout.jsx";
 import SingleCourse from "@/pages/SingleCourse.jsx";
 import Profile from "@/pages/Profile.jsx";
 import Purchases from "@/pages/Purchases.jsx";
-import LandingPage from "@/pages/LandingPage.jsx";
+import XFactorLanding from "@/components/XFactorLanding.jsx";
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<LandingPage/>}/>
+                <Route path="/" element={<XFactorLanding />}/>
                 <Route path="/login" element={<AuthPage/>}/>
                 <Route path="/signup" element={<AuthPage/>}/>
                 <Route path="/logout" element={<Logout />}/>
