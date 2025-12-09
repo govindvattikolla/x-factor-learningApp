@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@keyframes alternateScroll {
+  0% { transform: translateX(-80px); }
+  100% { transform: translateX(80px); }
+}
+
+.animate-scroll-img {
+  animation: alternateScroll 3s infinite alternate ease-in-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
