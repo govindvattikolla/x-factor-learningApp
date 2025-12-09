@@ -15,7 +15,6 @@ if (!fs.existsSync("uploads")) {
 } else {
     console.log("📁 Folder already exists: uploads");
 }
-import "./jobs/index.js";
 import {fileURLToPath} from "url";
 import path from "path";
 import DashboardRoute from "./routes/DashboardRoute.js";
