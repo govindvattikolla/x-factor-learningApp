@@ -371,12 +371,15 @@ router.post("/api/admin/course/video/add", upload.fields([
 ]), async (req, res) => {
     const videoFile = req.files?.video?.[0];
     const thumbnailFile = req.files?.thumbnail?.[0];
-    const session = await mongoose.startSession();
 
     const cleanupFiles = async () => {
-        if (videoFile) await deleteFromS3(videoFile.key);
-        if (thumbnailFile) await deleteFromS3(thumbnailFile.key);
+        const promises = [];
+        if (videoFile) promises.push(deleteFromS3(videoFile.key));
+        if (thumbnailFile) promises.push(deleteFromS3(thumbnailFile.key));
+        await Promise.all(promises);
     };
+
+    const session = await mongoose.startSession();
 
     try {
         session.startTransaction();
@@ -385,13 +388,10 @@ router.post("/api/admin/course/video/add", upload.fields([
 
         if (!title || !courseId || !videoFile || !thumbnailFile) {
             await cleanupFiles();
+            await session.abortTransaction();
             return res.status(400).json({ error: "Title, Course ID, Video file, and Thumbnail are required." });
         }
-        const course = await Course.findById(courseId);
-        if (!course) {
-            await cleanupFiles();
-            return res.status(404).json({ error: "Course not found." });
-        }
+
         const newVideo = new Video({
             title: title,
             courseId: courseId,
@@ -406,19 +406,48 @@ router.post("/api/admin/course/video/add", upload.fields([
 
         await newVideo.save({ session });
 
+        const updatedCourse = await Course.findByIdAndUpdate(
+            courseId,
+            {
+                $inc: { totalVideos: 1 },
+                $push: { videos: newVideo._id }
+            },
+            { session, new: true }
+        );
+
+        if (!updatedCourse) {
+            throw new Error("Course not found");
+        }
+
+        const updatedCourseProgress = await CourseProgress.updateMany(
+            {courseId:courseId},
+            {
+                $inc: { totalVideos: 1 },
+                isCompleted: false
+            },
+            { session, new: true }
+        );
+
+        if (!updatedCourseProgress) {
+            throw new Error("progress cant be updated");
+        }
+
         await session.commitTransaction();
         console.log(`Video "${title}" added to course ${courseId}`);
 
         res.status(201).json({
             message: "Video added successfully",
-            videoId: newVideo._id
+            videoId: newVideo._id,
+            totalVideos: updatedCourse.totalVideos
         });
 
     } catch (error) {
         console.error("Error adding video:", error);
-        await cleanupFiles();
         await session.abortTransaction();
-        res.status(500).json({ error: "Internal server error" });
+        await cleanupFiles();
+
+        const statusCode = error.message === "Course not found" ? 404 : 500;
+        res.status(statusCode).json({ error: error.message || "Internal server error" });
     } finally {
         await session.endSession();
     }
