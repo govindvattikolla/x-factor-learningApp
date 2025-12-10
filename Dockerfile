@@ -3,7 +3,7 @@ LABEL authors="ndatt"
 
 WORKDIR /app
 
-COPY ./Server/package*.json ./
+COPY backend/package*.json ./
 
 RUN npm install
 
