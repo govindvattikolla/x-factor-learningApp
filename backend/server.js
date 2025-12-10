@@ -15,8 +15,6 @@ if (!fs.existsSync("uploads")) {
 } else {
     console.log("📁 Folder already exists: uploads");
 }
-import {fileURLToPath} from "url";
-import path from "path";
 import DashboardRoute from "./routes/DashboardRoute.js";
 import webhookRoute from "./routes/webhookRoute.js";
 
@@ -42,10 +40,6 @@ app.use((req, res, next) => {
     res.header("Access-Control-Allow-Credentials", "true");
     next();
 });
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const frontendPath = path.resolve(__dirname, '../frontend/dist');
-app.use(express.static(frontendPath));
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
@@ -59,13 +53,9 @@ app.use(AuthRoute);
 app.use(courseRoutes);
 app.use(UserRoutes);
 app.use(AdminRoute);
-app.all("/api/", (req, res) => {
+app.all("*", (req, res) => {
     res.status(404).json({error: "Route not found"});
 })
-
-app.get("*", (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../frontend/dist/index.html'));
-});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
