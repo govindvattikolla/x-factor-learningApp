@@ -26,8 +26,13 @@ connectDB().then(() => {
 });
 
 const app = express();
+const origins=process.env.ALLOWED_ORIGINS;
+if(!origins){
+    console.log("please add the allowed ORIGINS");
+    process.exit(1);
+}
 const corsOptions = {
-    origin: "http://localhost:3001",
+    origin: origins.split(","),
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization", "x-requested-with"],
     credentials: true,
