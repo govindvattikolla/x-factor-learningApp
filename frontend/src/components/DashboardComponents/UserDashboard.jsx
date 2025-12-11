@@ -97,9 +97,7 @@ const UserDashboard = () => {
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {myCourse.map((course) => {
-                                // 4. Secure Image Logic
-                                const imgSrc = course.thumbnail
-                                    ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/static/${course.thumbnail}`
+                                const imgSrc = course.thumbnail ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/static/${course.thumbnail}`
                                     : 'https://via.placeholder.com/400x225';
 
                                 return (
@@ -116,7 +114,7 @@ const UserDashboard = () => {
                                             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
                                             <button className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm transform scale-75 group-hover:scale-100 transition-all">
-                                                    <Play className="ml-1 text-blue-600" size={20} fill="currentColor" />
+                                                    <Play className="ml-1 text-blue-600" size={20} fill="currentColor" onClick={() => router.push(`/dashboard/course/${course.id}`)} />
                                                 </div>
                                             </button>
                                         </div>
