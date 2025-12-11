@@ -24,7 +24,9 @@ const SingleCourse = () => {
     const fetchCourse = async () => {
         if (!id) return;
         try {
-            const res = await axiosInstance.get(`/api/user/course/${id}`);
+            const res = await axiosInstance.get(`/api/user/course/${id}`,{
+                withCredentials:true
+            });
 
             setCourse(res.data.course);
             setPurchased(res.data.purchased);
@@ -109,6 +111,8 @@ const SingleCourse = () => {
                 videoId,
                 watchedPercentage,
                 lastWatchedAt
+            },{
+                withCredentials:true
             });
 
             setProgressMap(prev => ({
@@ -152,7 +156,9 @@ const SingleCourse = () => {
         }
 
         try {
-            const { data } = await axiosInstance.post(`/api/user/course/${id}/create-order`);
+            const { data } = await axiosInstance.post(`/api/user/course/${id}/create-order`,{},{
+                withCredentials:true
+            });
 
             const options = {
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Ensure this ENV is set
@@ -165,6 +171,8 @@ const SingleCourse = () => {
                         await axiosInstance.post("/api/user/payment/verify", {
                             ...response,
                             courseId: id,
+                        },{
+                            withCredentials:true
                         });
                         alert("Payment successful!");
                         fetchCourse();

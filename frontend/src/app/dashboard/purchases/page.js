@@ -16,7 +16,9 @@ const Purchases = () => {
 
     const fetchPurchases = async () => {
         try {
-            const res = await axiosInstance.get("/api/user/my-courses");
+            const res = await axiosInstance.get("/api/user/my-courses",{
+                withCredentials:true
+            });
             setPurchases(res.data.purchases);
         } catch (error) {
             console.error("Error fetching purchases", error);

@@ -18,7 +18,9 @@ const CoursesPage = () => {
     const fetchCourses = async (page) => {
         setLoading(true);
         try {
-            const result = await axiosInstance.get(`/api/admin/course?page=${page}`);
+            const result = await axiosInstance.get(`/api/admin/course?page=${page}`,{
+                withCredentials:true
+            });
 
             if (result.data) {
                 const coursesInfo = result.data;

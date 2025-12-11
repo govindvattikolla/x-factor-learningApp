@@ -5,7 +5,6 @@ const RoleCheck = async (req, res, next) => {
         const path = req.path.split("/");
         if(path.length >= 3 && path[1] === 'api' && (path[2] === 'admin' || path[2] === 'user')){
             const token = req.cookies.token;
-            console.log(token);
 
             if (!token) {
                 return res.status(401).json({message: "Not authorized: No token found"});

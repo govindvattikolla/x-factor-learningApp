@@ -45,7 +45,9 @@ const Sidebar = () => {
 
     const fetchProfile = async () => {
         try {
-            const res = await axiosInstance.get("/api/user/me");
+            const res = await axiosInstance.get("/api/user/me",{
+                withCredentials: true,
+            });
             const data = res.data;
             if (!data.image) {
                 data.image = "https://placehold.co/150";
@@ -57,7 +59,7 @@ const Sidebar = () => {
     };
 
     useEffect(() => {
-        fetchProfile();
+        fetchProfile().then(r => console.log("fetched profile", r));
     }, []);
 
     const isActiveLink = (path) => {
