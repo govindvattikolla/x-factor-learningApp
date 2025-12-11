@@ -17,7 +17,13 @@ authRouter.post('/api/login', async (req, res) => {
                     role: 'admin',
                     id: admin._id,
                 }, process.env.JWT_SECRET,{ expiresIn: '1000m' });
-                res.json({token: token, role: role});
+                res.cookie('token', token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'strict',
+                    maxAge: 1000 * 60 * 1000
+                });
+                res.json({role: role});
             } else {
                 res.status(401).json({message: 'Invalid login or password'});
             }
@@ -30,7 +36,13 @@ authRouter.post('/api/login', async (req, res) => {
                     role: 'user',
                     id: user._id,
                 },process.env.JWT_SECRET,{ expiresIn: '1000m' })
-                res.json({token: token, role: role});
+                res.cookie('token', token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'strict',
+                    maxAge: 1000 * 60 * 1000
+                });
+                res.json({role: role});
             } else {
                 res.status(401).json({message: 'Invalid login or password'});
             }
@@ -78,6 +90,23 @@ authRouter.post('/api/signup', async (req, res) => {
            message: 'Internal Server Error',
        })
    }
+});
+
+
+authRouter.post('/api/logout', (req, res) => {
+    try {
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            path: '/'
+        });
+
+        res.status(200).json({ message: "Logged out successfully" });
+    } catch (e) {
+        console.error("Logout error: ", e);
+        res.status(500).json({ message: "Logout failed" });
+    }
 });
 
 export default authRouter;

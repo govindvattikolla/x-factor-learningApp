@@ -49,13 +49,11 @@ const AuthPage = () => {
                     role: formData.role,
                     login: formData.login,
                     password: formData.password,
+                },{
+                    withCredentials: true
                 });
 
-                const { token, role: userRole } = response.data;
-                if (typeof window !== 'undefined') {
-                    localStorage.setItem("token", token);
-                    localStorage.setItem("role", userRole);
-                }
+                const { role: userRole } = response.data;
                 dispatch(setRole(userRole));
                 router.push('/dashboard');
             } catch (err) {

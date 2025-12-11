@@ -17,6 +17,7 @@ if (!fs.existsSync("uploads")) {
 }
 import DashboardRoute from "./routes/DashboardRoute.js";
 import webhookRoute from "./routes/webhookRoute.js";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 connectDB().then(() => {
@@ -40,7 +41,7 @@ app.use((req, res, next) => {
     res.header("Access-Control-Allow-Credentials", "true");
     next();
 });
-
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 

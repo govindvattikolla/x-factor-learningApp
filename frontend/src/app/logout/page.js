@@ -10,7 +10,7 @@ const Logout = () => {
         localStorage.removeItem("userDetails");
 
         const timer = setTimeout(() => {
-            router("/login");
+            router.push("/login");
         }, 2000);
 
 

@@ -22,7 +22,9 @@ const UserDashboard = () => {
 
     const fetchData = async () => {
         try {
-            const response = await axiosInstance.get("/api/user/dashboard");
+            const response = await axiosInstance.get("/api/user/dashboard",{
+                withCredentials: true
+            });
             setMyCourse(response.data.courses || []);
             setStats(response.data.stats || {
                 totalEnrolledCourses: 0,
@@ -38,10 +40,8 @@ const UserDashboard = () => {
     };
 
     useEffect(() => {
-        // Redux might be null initially during rehydration
-        if (data) {
-            fetchData();
-        }
+        console.log("Fetching dashboard data");
+        fetchData();
     }, [data]);
 
     if (loading) {
