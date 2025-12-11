@@ -11,6 +11,11 @@ const CourseProgressSchema = new mongoose.Schema({
         ref: "Course",
         required: true
     },
+    videoId:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Video",
+        required: true
+    },
     isCompleted: {
         type: Boolean,
         default: false

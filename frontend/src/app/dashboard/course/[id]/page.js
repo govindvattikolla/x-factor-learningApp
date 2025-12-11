@@ -19,8 +19,8 @@ const SingleCourse = () => {
     const [loading, setLoading] = useState(true);
     const [selectedVideo, setSelectedVideo] = useState(null);
     const [progressMap, setProgressMap] = useState({});
+    const [isPlaying, setIsPlaying] = useState(false);
 
-    // Fetch Course
     const fetchCourse = async () => {
         if (!id) return;
         try {
@@ -50,7 +50,10 @@ const SingleCourse = () => {
             });
             setProgressMap(map);
 
-            if (res.data.purchased && updatedVideos.length > 0) {
+            if (res.data.currentVideoId) {
+                const selected = updatedVideos.find(v => v.id === res.data.currentVideoId);
+                if (selected) setSelectedVideo(selected);
+            } else if (res.data.purchased && updatedVideos.length > 0){
                 setSelectedVideo(updatedVideos[0]);
             }
 
@@ -65,14 +68,10 @@ const SingleCourse = () => {
         fetchCourse();
     }, [id]);
 
-    // Video Player Logic
     useEffect(() => {
         if (!selectedVideo) return;
-
         const video = videoRef.current;
         if (!video) return;
-
-        // Cleanup previous HLS instance if exists
         let hls;
 
         if (Hls.isSupported()) {
@@ -90,7 +89,6 @@ const SingleCourse = () => {
             });
 
         } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-            // For Safari
             video.src = `${process.env.NEXT_PUBLIC_BACKEND_URL}/static/${selectedVideo.url}`;
             video.addEventListener("loadedmetadata", () => {
                 const resumeTime = progressMap[selectedVideo.id]?.lastWatchedAt || 0;
@@ -103,7 +101,6 @@ const SingleCourse = () => {
         };
     }, [selectedVideo]);
 
-    // Progress Saving Logic
     const saveProgress = async (videoId, watchedPercentage, lastWatchedAt) => {
         try {
             await axiosInstance.put("/api/user/course/progress/update", {
@@ -132,14 +129,14 @@ const SingleCourse = () => {
     useEffect(() => {
         if (!purchased || !selectedVideo) return;
 
-        const videoElement = videoRef.current; // Use ref instead of document.getElementById
+        const videoElement = videoRef.current;
         if (!videoElement) return;
 
         const interval = setInterval(() => {
             const currentTime = videoElement.currentTime || 0;
             const duration = videoElement.duration || 0;
 
-            if (duration > 0) {
+            if (isPlaying && duration > 0) {
                 const watchedPercentage = Math.round((currentTime / duration) * 100);
                 saveProgress(selectedVideo.id, watchedPercentage, currentTime);
             }
@@ -223,6 +220,9 @@ const SingleCourse = () => {
                                 controls
                                 className="w-full h-full object-contain"
                                 poster={getAssetUrl(selectedVideo.thumbnailUrl)}
+                                onPlay={() => setIsPlaying(true)}
+                                onPause={() => setIsPlaying(false)}
+                                onEnded={() => setIsPlaying(false)}
                             />
                         ) : (
                             <div className="w-full h-full relative">

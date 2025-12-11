@@ -290,6 +290,11 @@ router.get("/api/user/course/:id", async (req, res) => {
             );
         }
 
+        const progress=await CourseProgress.findOne({
+            userId,
+            courseId,
+        })
+
         return res.json({
             course: {
                 id: course._id,
@@ -302,6 +307,7 @@ router.get("/api/user/course/:id", async (req, res) => {
             },
             videos: modifiedVideos,
             purchased,
+            currentVideoId:progress.videoId
         });
 
     } catch (error) {
@@ -344,9 +350,10 @@ router.put("/api/user/course/progress/update", async (req, res) => {
 
         const isCourseCompleted = completedVideos === totalVideos && totalVideos > 0;
 
-        const courseProgress = await CourseProgress.updateOne(
+        await CourseProgress.updateOne(
             {userId, courseId},
             {
+                videoId,
                 completedVideos,
                 isCompleted: isCourseCompleted
             }
@@ -354,8 +361,6 @@ router.put("/api/user/course/progress/update", async (req, res) => {
 
         return res.json({
             success: true,
-            progress,
-            courseProgress
         });
 
     } catch (error) {
